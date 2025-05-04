@@ -21,6 +21,9 @@ import * as nav from './shell/navigation';
 import { ApplicationApi } from './service/bw/co/roguesystems/bench/application/application-api';
 import { KEYCLOAK_EVENT_SIGNAL, KeycloakEventType, ReadyArgs, typeEventArgs } from 'keycloak-angular';
 import { Logger } from './@shared';
+import { ApplicationApiStore } from './store/bw/co/roguesystems/bench/application/application-api.store';
+import { ApplicationDTO } from './model/bw/co/roguesystems/bench/application/application-dto';
+import { AuthorisationListDTO } from './model/bw/co/roguesystems/bench/authorisation/authorisation-list-dto';
 
 const log = new Logger('App');
 
@@ -41,29 +44,20 @@ export class AppComponent implements OnInit, OnDestroy {
   private authorisationStore = inject(AuthorisationApiStore);
   private authorisationApi = inject(AuthorisationApi);
   protected applicationApi = inject(ApplicationApi);
+  protected applicationStore = inject(ApplicationApiStore);
   http = inject(HttpClient);
   env = this.appStore.env;
+
+  application: ApplicationDTO | undefined;
+  e: any;
+
+  envLoaded = false;
+  applicationLoaded = false;
 
   loadingEnv = false;
 
   constructor() {
     const keycloakSignal = inject(KEYCLOAK_EVENT_SIGNAL);
-
-    effect(() => {
-      if (!this.env) {
-        return;
-      }
-
-      let e = this.env();
-      if (e) {
-        if (e && this.loadingEnv) {
-          this.loadRealmRoles(e);
-          this.loadingEnv = false;
-        }
-      }
-
-      let realmRoles = this.appStore.realmRoles();
-    });
 
     effect(() => {
       const keycloakEvent = keycloakSignal();
@@ -76,22 +70,50 @@ export class AppComponent implements OnInit, OnDestroy {
         this.appStore.reset();
       }
     });
+
+    effect(() => {
+      if (!this.env) {
+        return;
+      }
+
+      this.e = this.env();
+      if (this.e) {
+        if (this.e && this.loadingEnv) {
+          console.log('application', this.application, this.e);
+          // this.loadRealmRoles(e);
+          this.loadingEnv = false;
+          this.envLoaded = true;
+
+          if(this.applicationLoaded) {
+            this.loadRealmRoles();
+            this.envLoaded = false;
+            this.applicationLoaded = false;
+          }
+        }
+      }
+    });
+
+    effect(() => {
+
+      this.application = this.applicationStore.data();
+      console.log('application', this.application, this.e);
+      if (this.application?.id) {
+        this.appStore.setApplication(this.application);
+        this.applicationLoaded = true;
+
+        if (this.e) {
+          this.loadRealmRoles();
+          this.loadAuthorisedPaths();
+          this.applicationLoaded = false;
+          this.envLoaded = false;
+        }
+      }
+    });
   }
 
-  ngOnInit() {
-    console.log('ngOnInit', environment);
-    this.applicationApi.findByCode(environment.applicationCode).subscribe({
-      next: (application) => {
-        this.appStore.setApplication(application);
-      },
-      error: (error) => {
-      },
-      complete: () => {
-      },
-    });
+  ngOnInit(): void {
     this.appStore.setAuthorisedPathsLoaded(false);
     this.loadingEnv = true;
-    this.appStore.getEnv();
 
     // Setup logger
     if (environment.production) {
@@ -126,6 +148,9 @@ export class AppComponent implements OnInit, OnDestroy {
         }
       });
 
+    this.appStore.getEnv();
+    this.applicationStore.findByCode({ code: environment.applicationCode });
+
     if (!this.keycloak.authenticated) {
       this.appStore.setAuthorisedPathsLoaded(true);
     }
@@ -135,16 +160,17 @@ export class AppComponent implements OnInit, OnDestroy {
     this.i18nService.destroy();
   }
 
-  loadRealmRoles(env: any) {
+  loadRealmRoles() {
+    console.log('loadRealmRoles', this.e, this.appStore.application());
     if (this.keycloak.authenticated) {
 
       this.keycloak.loadUserInfo().then((userInfo) => {
         this.appStore.setUsername((userInfo || {} as any)['preferred_username']);
       });
 
-      let realmUrl = `${env.authDomain}/admin/realms/${this.keycloak.realm}`;
-      let excludedRoles = ['offline_access', 'uma_authorization', `default-roles-${this.keycloak.realm}`];
+      let realmUrl = `${this.e.authDomain}/admin/realms/${this.keycloak.realm}`;
 
+      let excludedRoles = ['offline_access', 'uma_authorization', `default-roles-${this.keycloak.realm}`];
       let realRoles = (this.keycloak.realmAccess?.roles || []).filter((role) => {
         return excludedRoles.indexOf(role) === -1;
       });
@@ -164,12 +190,17 @@ export class AppComponent implements OnInit, OnDestroy {
           });
         });
 
-      this.loadAuthorisedPaths(realRoles);
+      // this.loadAuthorisedPaths(realRoles);
 
     }
   }
 
-  loadAuthorisedPaths(realmRoles: string[] = []) {
+  loadAuthorisedPaths() {
+    let excludedRoles = ['offline_access', 'uma_authorization', `default-roles-${this.keycloak.realm}`];
+    let realmRoles = (this.keycloak.realmAccess?.roles || []).filter((role) => {
+      return excludedRoles.indexOf(role) === -1;
+    });
+
     let loggedIn = this.keycloak.authenticated;
 
     if (loggedIn && realmRoles.length > 0) {
@@ -180,18 +211,22 @@ export class AppComponent implements OnInit, OnDestroy {
       menus.push('VIEW');
 
       this.authorisationApi
-        .getAccessTypeCodeAuthorisations(environment.applicationCode,
+        .getAccessTypeCodeAuthorisations(this.application?.id,
           realmRoles,
           menus,
         )
         .subscribe({
-          next: (authorisations) => {
+          next: (authorisations: AuthorisationListDTO[]) => {
+            console.log('authorisations', authorisations, this.appStore.menus());
             this.appStore.addMenus(
-              nav.menuItems.map((menu) => {
-                let m = authorisations.find((auth) => auth.accessPointUrl === menu.routerLink);
-                if (m) {
-                  return menu;
-                }
+              authorisations.map((auth) => {
+
+                return {
+                  routerLink: auth.accessPointUrl,
+                  titleKey: auth.accessPoint,
+                  icon: auth.accessPointIcon,
+                  roles: auth.roles.split(','),
+                };
               }),
             );
 

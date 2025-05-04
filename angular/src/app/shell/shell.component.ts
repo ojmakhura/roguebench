@@ -1,5 +1,5 @@
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
-import { Component, inject, OnInit, ViewChild } from '@angular/core';
+import { Component, effect, inject, OnInit, ViewChild } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { Router, RouterModule } from '@angular/router';
 import Keycloak from 'keycloak-js';
@@ -11,13 +11,15 @@ import * as nav from './navigation';
 import { LanguageSelectorComponent } from '@app/i18n/language-selector.component';
 import { MatDrawer } from '@angular/material/sidenav';
 import { AppEnvStore } from '@app/store/app-env.state';
+import { HasRolesDirective } from 'keycloak-angular';
+import { HasRealmRoleDirective } from '@app/directive/has-realm-role.directive';
 
 @Component({
   selector: 'app-shell',
   templateUrl: './shell.component.html',
   styleUrls: ['./shell.component.scss'],
   standalone: true,
-  imports: [CommonModule, TranslateModule, MaterialModule, RouterModule, LanguageSelectorComponent],
+  imports: [CommonModule, TranslateModule, MaterialModule, RouterModule, LanguageSelectorComponent, HasRealmRoleDirective],
 })
 export class ShellComponent implements OnInit {
   @ViewChild('sidenav') sidenav: MatDrawer | undefined;
@@ -31,10 +33,20 @@ export class ShellComponent implements OnInit {
   menus: any[] = [];
   isMobileMenuOpen = false;
 
-  constructor() {}
+  constructor() {
+    effect(() => {
+      console.log('env', this.appStore.env());
+    });
+
+    effect(() => {
+      console.log(this.appStore.menus());
+    });
+  }
 
   ngOnInit() {
     this.menus = nav.menuItems;
+    console.log(this.appStore.menus())
+    console.log(this.keycloak.profile)
   }
 
   toggleMobileMenu() {

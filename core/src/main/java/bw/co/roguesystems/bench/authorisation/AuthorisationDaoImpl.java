@@ -138,10 +138,10 @@ public class AuthorisationDaoImpl
 
             target.setAccessPointType(type.getName());
 
-            // if(source.getRoles() != null)
-            // {
-            //     target.setRoles(source.getRoles());
-            // }
+             if(source.getRoles() != null)
+             {
+                 target.setRoles(String.join(",", source.getRoles()));
+             }
         }
     }
 

@@ -35,11 +35,26 @@
           </a>
           <mat-divider></mat-divider>
         </div>
-        <div *ngFor="let item of menus">
+
+        @for(item of appStore.menus(); track item.routerLink) {
+          {{ item.routerLink| json }}
           <a
             mat-list-item
             routerLink="{{ item.routerLink }}"
             routerLinkActive="active"
+            *kaHasRoles="[]"
+            (click)="isMobile && sidenav.close()"
+          >
+            <span translate>{{ item.titleKey }}</span>
+          </a>
+        }
+
+        <div *ngFor="let item of appStore.menus()">
+          <a
+            mat-list-item
+            routerLink="{{ item.routerLink }}"
+            routerLinkActive="active"
+            *kaHasRoles="item.roles"
             (click)="isMobile && sidenav.close()"
           >
             <span translate>{{ item.titleKey }}</span>
