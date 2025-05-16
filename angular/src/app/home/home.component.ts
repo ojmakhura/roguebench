@@ -22,6 +22,5 @@ export class HomeComponent implements OnInit {
   constructor(private quoteService: QuoteService) {}
 
   ngOnInit() {
-    this.isLoading = true;
   }
 }

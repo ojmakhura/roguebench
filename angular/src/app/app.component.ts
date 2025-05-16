@@ -13,13 +13,11 @@ import { I18nService } from './i18n/i18n.service';
 import { AppEnvStore } from './store/app-env.state';
 
 import Keycloak from 'keycloak-js';
-import { AuthorisationApiStore } from './store/bw/co/roguesystems/bench/authorisation/authorisation-api.store';
 import { AuthorisationApi } from './service/bw/co/roguesystems/bench/authorisation/authorisation-api';
 import { HttpClient } from '@angular/common/http';
 import { SelectItem } from './utils/select-item';
-import * as nav from './shell/navigation';
 import { ApplicationApi } from './service/bw/co/roguesystems/bench/application/application-api';
-import { KEYCLOAK_EVENT_SIGNAL, KeycloakEventType, ReadyArgs, typeEventArgs } from 'keycloak-angular';
+import { KEYCLOAK_EVENT_SIGNAL, KeycloakEventType } from 'keycloak-angular';
 import { Logger } from './@shared';
 import { ApplicationApiStore } from './store/bw/co/roguesystems/bench/application/application-api.store';
 import { ApplicationDTO } from './model/bw/co/roguesystems/bench/application/application-dto';
@@ -41,7 +39,6 @@ export class AppComponent implements OnInit, OnDestroy {
   private i18nService = inject(I18nService);
   readonly appStore = inject(AppEnvStore);
   protected keycloak = inject(Keycloak);
-  private authorisationStore = inject(AuthorisationApiStore);
   private authorisationApi = inject(AuthorisationApi);
   protected applicationApi = inject(ApplicationApi);
   protected applicationStore = inject(ApplicationApiStore);
@@ -55,6 +52,7 @@ export class AppComponent implements OnInit, OnDestroy {
   applicationLoaded = false;
 
   loadingEnv = false;
+  loadMenus = false;
 
   constructor() {
     const keycloakSignal = inject(KEYCLOAK_EVENT_SIGNAL);
@@ -79,7 +77,6 @@ export class AppComponent implements OnInit, OnDestroy {
       this.e = this.env();
       if (this.e) {
         if (this.e && this.loadingEnv) {
-          console.log('application', this.application, this.e);
           // this.loadRealmRoles(e);
           this.loadingEnv = false;
           this.envLoaded = true;
@@ -96,16 +93,16 @@ export class AppComponent implements OnInit, OnDestroy {
     effect(() => {
 
       this.application = this.applicationStore.data();
-      console.log('application', this.application, this.e);
       if (this.application?.id) {
         this.appStore.setApplication(this.application);
         this.applicationLoaded = true;
 
-        if (this.e) {
+        if (this.e && this.loadMenus) {
           this.loadRealmRoles();
           this.loadAuthorisedPaths();
           this.applicationLoaded = false;
           this.envLoaded = false;
+          this.loadMenus = false;
         }
       }
     });
@@ -119,7 +116,6 @@ export class AppComponent implements OnInit, OnDestroy {
     if (environment.production) {
       Logger.enableProductionMode();
     }
-    console.log(this.appStore.application())
 
     log.debug('init');
 
@@ -149,6 +145,7 @@ export class AppComponent implements OnInit, OnDestroy {
       });
 
     this.appStore.getEnv();
+    this.loadMenus = true;
     this.applicationStore.findByCode({ code: environment.applicationCode });
 
     if (!this.keycloak.authenticated) {
@@ -161,7 +158,6 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   loadRealmRoles() {
-    console.log('loadRealmRoles', this.e, this.appStore.application());
     if (this.keycloak.authenticated) {
 
       this.keycloak.loadUserInfo().then((userInfo) => {
@@ -177,7 +173,6 @@ export class AppComponent implements OnInit, OnDestroy {
 
       realRoles
         .forEach((role) => {
-          console.log('test role', role);
           this.http.get<any>(`${realmUrl}/roles/${role}`).subscribe((role) => {
             if (this.keycloak.realmAccess?.roles.includes(role.name)) {
               let item = new SelectItem();
@@ -185,7 +180,6 @@ export class AppComponent implements OnInit, OnDestroy {
               item.value = role['name'];
 
               this.appStore.addRealmRole(item);
-              console.log(this.appStore.realmRoles());
             }
           });
         });
@@ -217,7 +211,6 @@ export class AppComponent implements OnInit, OnDestroy {
         )
         .subscribe({
           next: (authorisations: AuthorisationListDTO[]) => {
-            console.log('authorisations', authorisations, this.appStore.menus());
             this.appStore.addMenus(
               authorisations.map((auth) => {
 

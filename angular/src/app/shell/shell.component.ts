@@ -25,7 +25,7 @@ export class ShellComponent implements OnInit {
   @ViewChild('sidenav') sidenav: MatDrawer | undefined;
   readonly appStore = inject(AppEnvStore);
   private titleService = inject(Title);
-  private keycloak = inject(Keycloak);
+  protected keycloak = inject(Keycloak);
   private breakpoint = inject(BreakpointObserver);
   env = this.appStore.env;
   protected router: Router = inject(Router);

@@ -132,8 +132,8 @@ public class AuthorisationServiceImpl
         }
 
         Collection<AuthorisationListDTO> authorisations = roles.isEmpty()
-                ? authorisationRepository.searchNoRoles(criteria.getApplicationId(), criteria.getAccessPointName(), criteria.getAccessPointUrl())
-                : authorisationRepository.search(criteria.getApplicationId(), criteria.getAccessPointName(), criteria.getAccessPointUrl(), roles);
+                ? authorisationRepository.searchNoRoles(criteria.getApplicationId(), criteria.getAccessPointName(), criteria.getAccessPointUrl(), criteria.getAccessPointType())
+                : authorisationRepository.search(criteria.getApplicationId(), criteria.getAccessPointName(), criteria.getAccessPointUrl(), criteria.getAccessPointType(), roles);
 
         return authorisations;
     }
@@ -254,11 +254,11 @@ public class AuthorisationServiceImpl
         }
 
         Page<AuthorisationListDTO> authorisations = roles.isEmpty()
-                ? this.authorisationRepository.searchNoRoles(criteria.getCriteria().getApplicationId(), accessPointName, accessPointUrl,
+                ? this.authorisationRepository.searchNoRoles(criteria.getCriteria().getApplicationId(), accessPointName, accessPointUrl, accessPointType,
                         PageRequest.of(criteria.getPageNumber(), criteria.getPageSize()))
                 : this.authorisationRepository.search(
                         criteria.getCriteria().getApplicationId(),
-                        criteria.getCriteria().getAccessPointName(), criteria.getCriteria().getAccessPointUrl(), roles,
+                        criteria.getCriteria().getAccessPointName(), criteria.getCriteria().getAccessPointUrl(), accessPointType, roles,
                         PageRequest.of(criteria.getPageNumber(), criteria.getPageSize()));
 
 

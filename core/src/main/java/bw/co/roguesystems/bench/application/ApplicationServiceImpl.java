@@ -135,7 +135,10 @@ public class ApplicationServiceImpl
 
         Sort sort = SortOrderFactory.createSortOrder(orderings);
 
-        Collection<Application> entities = applicationRepository.findAll(spec, sort);
+        Collection<Application> entities =
+                sort == null ?
+                applicationRepository.findAll(spec) :
+                applicationRepository.findAll(spec, sort);
         Collection<ApplicationDTO> dtos = applicationDao.toApplicationDTOCollection(entities);
         return dtos;
     }

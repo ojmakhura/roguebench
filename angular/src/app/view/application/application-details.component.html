@@ -66,7 +66,7 @@
             </div>
             <div class="row">
               <app-table #accessPointsTable [dataColumns]="accessPointsTableColumns"
-                [showActions]="showAccessPointsActions" [paged]="accessPointsTablePaged"
+                [showActions]="showAccessPointsActions" [paged]="true"
                 [actions]="accessPointsTableColumnsActions" [dataSignal]="accessPointsTableSignal">
               </app-table>
             </div>
@@ -84,20 +84,13 @@
             </div>
             <div class="row">
               <app-table #authorisationsTable [dataColumns]="authorisationsTableColumns"
-                [showActions]="showAuthorisationsActions" [paged]="authorisationsTablePaged"
+                [showActions]="showAuthorisationsActions" [paged]="true"
                 [actions]="authorisationsTableColumnsActions" [dataSignal]="authorisationsTableSignal">
               </app-table>
             </div>
           </ng-template>
         </mat-tab>
       </mat-tab-group>
-
-      <!-- <div class="row">
-        <app-table #authorisationsTable [dataColumns]="authorisationsTableColumns"
-          [showActions]="showAuthorisationsActions" [paged]="authorisationsTablePaged"
-          [actions]="authorisationsTableColumnsActions" [dataSignal]="authorisationsTableSignal">
-        </app-table>
-      </div> -->
     </form>
   </div>
 </div>

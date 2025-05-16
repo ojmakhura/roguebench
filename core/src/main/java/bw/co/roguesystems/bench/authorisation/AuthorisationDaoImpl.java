@@ -53,6 +53,8 @@ public class AuthorisationDaoImpl
             accessPoint.setUrl(source.getAccessPoint().getUrl());
             accessPoint.setTypeId(source.getAccessPoint().getAccessPointType().getId());
             accessPoint.setType(source.getAccessPoint().getAccessPointType().getName());
+            accessPoint.setApplicationId(source.getAccessPoint().getApplication().getId());
+            accessPoint.setApplication(source.getAccessPoint().getApplication().getName());
             target.setAccessPoint(accessPoint);
         }
     }

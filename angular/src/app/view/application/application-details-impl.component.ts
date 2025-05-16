@@ -15,6 +15,7 @@ import { AuthorisationApiStore } from '@app/store/bw/co/roguesystems/bench/autho
 import { AppEnvStore } from '@app/store/app-env.state';
 import { environment } from '@env/environment';
 import { ColumnModel } from '@app/model/column.model';
+import { AccessPointApiStore } from '@app/store/bw/co/roguesystems/bench/access/access-point-api.store';
 
 @Component({
   selector: 'app-application-details',
@@ -34,6 +35,8 @@ import { ColumnModel } from '@app/model/column.model';
 export class ApplicationDetailsImplComponent extends ApplicationDetailsComponent {
 
   readonly authorisationApiStore = inject(AuthorisationApiStore);
+  readonly accessPointStore = inject(AccessPointApiStore);
+  readonly authorisationStore = inject(AuthorisationApiStore);
   readonly appStore = inject(AppEnvStore);
 
   override accessPointsTableColumns: ColumnModel[] = [
@@ -82,9 +85,22 @@ export class ApplicationDetailsImplComponent extends ApplicationDetailsComponent
     this.messages = this.applicationApiStore.messages;
     this.applicationApiStore.reset();
 
+    this.accessPointsTableSignal = this.accessPointStore.dataPage;
+    this.accessPointsTablePaged = true;
+
+    this.authorisationsTableSignal = this.authorisationStore.dataPage;
+    this.authorisationsTablePaged = true;
+
     effect(() => {
       let application = this.applicationApiStore.data();
       this.applicationDetailsForm.patchValue(application);
+
+      console.log('applicationDetailsForm', application);
+
+      if(application?.id) {
+        this.loadDetails();
+      }
+
     });
   }
 
@@ -108,5 +124,10 @@ export class ApplicationDetailsImplComponent extends ApplicationDetailsComponent
   }
 
   doNgOnDestroy(): void {
+  }
+
+  loadDetails() {
+    this.accessPointStore.findApplicationAccessPointsPaged({ applicationId: this.applicationApiStore.data().id, pageNumber: 0, pageSize: 10 });
+    this.authorisationApiStore.findApplicationAuthorisationPaged({ applicationId: this.applicationApiStore.data().id, pageNumber: 0, pageSize: 10 });
   }
 }

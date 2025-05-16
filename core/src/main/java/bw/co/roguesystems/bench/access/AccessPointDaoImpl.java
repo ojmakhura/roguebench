@@ -8,6 +8,7 @@ package bw.co.roguesystems.bench.access;
 
 import bw.co.roguesystems.bench.access.type.AccessPointTypeDTO;
 import bw.co.roguesystems.bench.access.type.AccessPointTypeRepository;
+import bw.co.roguesystems.bench.application.ApplicationDTO;
 import bw.co.roguesystems.bench.application.ApplicationRepository;
 import org.springframework.stereotype.Repository;
 
@@ -56,8 +57,16 @@ public class AccessPointDaoImpl
 
         if(source.getApplication() != null)
         {
-            // target.setApplicationId(source.getApplication().getId());
-            // target.setApplicationName(source.getApplication().getName());
+            ApplicationDTO application = new ApplicationDTO();
+
+            application.setId(source.getApplication().getId());
+            application.setName(source.getApplication().getName());
+            application.setCreatedAt(source.getApplication().getCreatedAt());
+            application.setModifiedAt(source.getApplication().getModifiedAt());
+            application.setCreatedBy(source.getApplication().getCreatedBy());
+            application.setModifiedBy(source.getApplication().getModifiedBy());
+
+            target.setApplication(application);
         }
     }
 

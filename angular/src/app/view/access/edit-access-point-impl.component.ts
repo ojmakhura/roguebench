@@ -16,6 +16,9 @@ import { AuthorisationApiStore } from '@app/store/bw/co/roguesystems/bench/autho
 import { UrlTree } from '@angular/router';
 import { of } from 'rxjs';
 import { environment } from '@env/environment';
+import { AccessPointTypeApiStore } from '@app/store/bw/co/roguesystems/bench/access/type/access-point-type-api.store';
+import { ApplicationApiStore } from '@app/store/bw/co/roguesystems/bench/application/application-api.store';
+import { AccessPointTypeDTO } from '@app/model/bw/co/roguesystems/bench/access/type/access-point-type-dto';
 
 export enum EditAccessPointRestrictions {
   DELETE_BUTTON = '/access/edit{button:delete}',
@@ -40,6 +43,8 @@ export class EditAccessPointImplComponent extends EditAccessPointComponent {
 
   private appState = inject(AppEnvStore);
   private authorisationApiStore = inject(AuthorisationApiStore);
+  readonly accessPointTypeApiStore = inject(AccessPointTypeApiStore);
+  readonly applicationApiStore = inject(ApplicationApiStore);
 
   constructor() {
     super();
@@ -66,6 +71,33 @@ export class EditAccessPointImplComponent extends EditAccessPointComponent {
         this.router.navigate(['/access']);
       }
     });
+
+    effect(() => {
+      let accessPoint = this.accessPointApiStore.data();
+      if (accessPoint) {
+        this.editAccessPointForm.patchValue(accessPoint);
+        // this.editAccessPointForm.get('accessPointType')?.setValue(accessPoint.accessPointType);
+        // this.editAccessPointForm.get('accessPointType')?.updateValueAndValidity();
+        if (accessPoint?.accessPointType.id) {
+          this.accessPointTypeFilteredList$ = of([accessPoint?.accessPointType]);
+        }
+
+        if(accessPoint?.application) {
+          this.applicationFilteredList$ = of([accessPoint?.application]);
+
+        }
+      }
+    });
+
+    effect(() => {
+      this.accessPointTypeBackingList = this.accessPointTypeApiStore.dataList();
+        this.accessPointTypeFilteredList$ = of(this.accessPointTypeBackingList);
+    });
+
+    effect(() => {
+      this.applicationBackingList = this.applicationApiStore.dataList();
+      this.applicationFilteredList$ = of(this.applicationBackingList);
+    });
   }
 
   override beforeOnInit(form: EditAccessPointVarsForm): EditAccessPointVarsForm {
@@ -87,7 +119,7 @@ export class EditAccessPointImplComponent extends EditAccessPointComponent {
     return form;
   }
 
-  doNgOnDestroy(): void {}
+  doNgOnDestroy(): void { }
 
   override beforeEditAccessPointSave(form: any): void {
     if (this.editAccessPointForm.invalid) {
@@ -113,5 +145,21 @@ export class EditAccessPointImplComponent extends EditAccessPointComponent {
   override editAccessPointFormReset() {
     super.editAccessPointFormReset();
     this.accessPointTypeFilteredList$ = of([]);
+  }
+
+  override filterAccessPointType(): void {
+    this.accessPointTypeApiStore.search({ criteria: this.accessPointTypeFilterCtrl.value ? this.accessPointTypeFilterCtrl.value : '' });
+  }
+
+  override accessPointTypeCompare(o1: AccessPointTypeDTO | any, o2: AccessPointTypeDTO | any) {
+    return o1 && o2 ? o1.id === o2.id : false;
+  }
+
+  override filterApplication(): void {
+    this.applicationApiStore.search({ criteria: this.applicationFilterCtrl.value ? this.applicationFilterCtrl.value : '' });
+  }
+
+  override applicationCompare(o1: any, o2: any) {
+    return o1 && o2 ? o1.id === o2.id : false;
   }
 }

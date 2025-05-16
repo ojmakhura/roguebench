@@ -10,6 +10,7 @@
     <mat-toolbar>
       <span translate>application.name</span>
       <div fxFlex></div>
+      @if(keycloak.authenticated) {
       <div>
         <button mat-icon-button [matMenuTriggerFor]="userMenu">
           <mat-icon>person</mat-icon>
@@ -24,6 +25,16 @@
           <button mat-menu-item (click)="logout()" translate>Logout</button>
         </mat-menu>
       </div>
+      } @else {
+      <div>
+        <button mat-icon-button [matMenuTriggerFor]="loginMenu">
+          <mat-icon>person</mat-icon>
+        </button>
+        <mat-menu #loginMenu="matMenu">
+          <button mat-menu-item (click)="login()" translate>Login</button>
+        </mat-menu>
+      </div>
+      }
       <app-language-selector [icon]="true"></app-language-selector>
     </mat-toolbar>
     <mat-action-list>
@@ -37,30 +48,17 @@
         </div>
 
         @for(item of appStore.menus(); track item.routerLink) {
-          {{ item.routerLink| json }}
           <a
             mat-list-item
             routerLink="{{ item.routerLink }}"
             routerLinkActive="active"
-            *kaHasRoles="[]"
-            (click)="isMobile && sidenav.close()"
-          >
-            <span translate>{{ item.titleKey }}</span>
-          </a>
-        }
-
-        <div *ngFor="let item of appStore.menus()">
-          <a
-            mat-list-item
-            routerLink="{{ item.routerLink }}"
-            routerLinkActive="active"
-            *kaHasRoles="item.roles"
+            *hasRealmRole="item.roles"
             (click)="isMobile && sidenav.close()"
           >
             <span translate>{{ item.titleKey }}</span>
           </a>
           <mat-divider></mat-divider>
-        </div>
+        }
         <div>
           <a mat-list-item routerLink="/about" routerLinkActive="active" (click)="isMobile && sidenav.close()">
             <span translate>about</span>
