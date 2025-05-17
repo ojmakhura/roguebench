@@ -23,17 +23,12 @@
     "lib": ["es2022", "dom"],
     "baseUrl": "./",
     "paths": {
-
       "@app/*": ["src/app/*"],
       "@service/*": ["src/app/service/*"],
       "@controller/*": ["src/app/controller/*"],
       "@model/*": ["src/app/model/*"],
       "@store/*": ["src/app/store/*"],
       "@view/*": ["src/app/view/*"],
-      "@core": ["src/app/@core"],
-      "@core/*": ["src/app/@core/*"],
-      "@shared": ["src/app/@shared"],
-      "@shared/*": ["src/app/@shared/*"],
       "@env/*": ["src/environments/*"]
     },
     "useDefineForClassFields": false

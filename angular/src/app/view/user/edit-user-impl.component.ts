@@ -9,7 +9,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
 import { MaterialModule } from '@app/material.module';
 import { TableComponent } from '@app/components/table/table.component';
-import { LoaderComponent } from "@shared/loader/loader.component";
+import { LoaderComponent } from "@app/@shared/loader/loader.component";
 import { ChangePasswordImplComponent } from '@app/view/user/change-password-impl.component';
 import { UserEditorImplComponent } from '@app/components/user/user-editor-impl.component';
 
@@ -36,7 +36,7 @@ export class EditUserImplComponent extends EditUserComponent {
         super();
     }
 
-    override beforeOnInit(form: EditUserVarsForm): EditUserVarsForm{     
+    override beforeOnInit(form: EditUserVarsForm): EditUserVarsForm{
         return form;
     }
 

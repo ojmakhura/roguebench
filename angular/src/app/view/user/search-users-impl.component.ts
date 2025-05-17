@@ -9,7 +9,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
 import { MaterialModule } from '@app/material.module';
 import { TableComponent } from '@app/components/table/table.component';
-import { LoaderComponent } from "@shared/loader/loader.component";
+import { LoaderComponent } from "@app/@shared/loader/loader.component";
 
 @Component({
   selector: 'app-search-users',
@@ -32,7 +32,7 @@ export class SearchUsersImplComponent extends SearchUsersComponent {
         super();
     }
 
-    override beforeOnInit(form: SearchUsersVarsForm): SearchUsersVarsForm{     
+    override beforeOnInit(form: SearchUsersVarsForm): SearchUsersVarsForm{
         return form;
     }
 

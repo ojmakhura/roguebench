@@ -6,7 +6,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
 import { MaterialModule } from '@app/material.module';
-import { LoaderComponent } from "@shared/loader/loader.component";
+import { LoaderComponent } from "@app/@shared/loader/loader.component";
 import { AuthorisationApiStore } from '@app/store/bw/co/roguesystems/bench/authorisation/authorisation-api.store';
 import { AppEnvStore } from '@app/store/app-env.state';
 import { UrlTree } from '@angular/router';

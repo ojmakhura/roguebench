@@ -10,7 +10,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
 import { MaterialModule } from '@app/material.module';
 import { TableComponent } from '@app/components/table/table.component';
-import { LoaderComponent } from "@shared/loader/loader.component";
+import { LoaderComponent } from "@app/@shared/loader/loader.component";
 
 @Component({
   selector: 'app-change-password',
@@ -33,7 +33,7 @@ export class ChangePasswordImplComponent extends ChangePasswordComponent {
         super(data);
     }
 
-    override beforeOnInit(form: ChangePasswordVarsForm): ChangePasswordVarsForm{     
+    override beforeOnInit(form: ChangePasswordVarsForm): ChangePasswordVarsForm{
         return form;
     }
 
