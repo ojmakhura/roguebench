@@ -8,6 +8,9 @@
 // @import 'ngx-toastr/toastr-bs4-alert';
 
 // if you'd like to use it without importing all of bootstrap it requires
+@import 'bootstrap/dist/css/bootstrap.css';
+@import 'bootstrap-icons/font/bootstrap-icons.css';
+@import '@angular/material/prebuilt-themes/azure-blue.css';
 @import 'bootstrap/scss/functions';
 @import 'bootstrap/scss/variables';
 @import 'bootstrap/scss/mixins';
