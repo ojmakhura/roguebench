@@ -5,6 +5,7 @@
 //
 package bw.co.roguesystems.bench.authorisation;
 
+import bw.co.roguesystems.bench.AuditTracker;
 import bw.co.roguesystems.bench.SearchObject;
 import bw.co.roguesystems.bench.keycloak.KeycloakService;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -22,6 +23,8 @@ import org.postgresql.util.PSQLException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -238,15 +241,8 @@ public class AuthorisationApiImpl extends AuthorisationApiBase {
         try {
             logger.debug("Saves Authorisation " + authorisation);
 
-            if (StringUtils.isBlank(authorisation.getId())) {
-
-                authorisation.setCreatedAt(LocalDateTime.now());
-                authorisation.setCreatedBy(keycloakService.getJwt().getClaimAsString("preferred_username"));
-            } else {
-
-                authorisation.setModifiedAt(LocalDateTime.now());
-                authorisation.setModifiedBy(keycloakService.getJwt().getClaimAsString("preferred_username"));
-            }
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            AuditTracker.auditTrail(authorisation, authentication);
 
             Optional<AuthorisationDTO> data = Optional.of(authorisationService.save(authorisation)); // TODO: Add custom
                                                                                                      // code here;
@@ -412,6 +408,43 @@ public class AuthorisationApiImpl extends AuthorisationApiBase {
 
             logger.error(message);
             return ResponseEntity.badRequest().body(message);
+        }
+    }
+
+    @Override
+    public ResponseEntity<?> handleFindAuthorisedApplications(Set<String> roles) {
+        
+        try {
+            logger.debug("Searches for Authorisation by roles " + roles);
+            return ResponseEntity.ok().body(authorisationService.findAuthorisedApplications(roles));
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            logger.error(e.getMessage());
+            return ResponseEntity.status(HttpStatus.NO_CONTENT)
+                    .body("Unknown error encountered. Please contact administrator.");
+        }
+    }
+
+    @Override
+    public ResponseEntity<?> handleFindAuthorisedApplicationsPaged(Set<String> roles, Integer pageNumber,
+            Integer pageSize) {
+        
+        try {
+            logger.debug("Searches for Authorisation by roles " + roles);
+            Optional<?> data = Optional.of(authorisationService.findAuthorisedApplications(roles, pageNumber, pageSize)); // TODO: Add custom code here;
+            ResponseEntity<?> response;
+
+            if (data.isPresent()) {
+                response = ResponseEntity.ok().body(data.get());
+            } else {
+                response = ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+            }
+
+            return response;
+        } catch (Exception e) {
+            logger.error(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
 }

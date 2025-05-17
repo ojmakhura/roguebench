@@ -5,6 +5,7 @@
 //
 package bw.co.roguesystems.bench.access.type;
 
+import bw.co.roguesystems.bench.AuditTracker;
 import bw.co.roguesystems.bench.SearchObject;
 import bw.co.roguesystems.bench.keycloak.KeycloakService;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -18,6 +19,8 @@ import org.postgresql.util.PSQLException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -141,16 +144,9 @@ public class AccessPointTypeApiImpl extends AccessPointTypeApiBase {
     @Override
     public ResponseEntity<?> handleSave(AccessPointTypeDTO accessPointType) {
         try {
-            
-            if(StringUtils.isBlank(accessPointType.getId())) {
-                
-                accessPointType.setCreatedAt(LocalDateTime.now());
-                accessPointType.setCreatedBy(keycloakService.getJwt().getClaimAsString("preferred_username"));
-            } else {
-
-                accessPointType.setModifiedAt(LocalDateTime.now());
-                accessPointType.setModifiedBy(keycloakService.getJwt().getClaimAsString("preferred_username"));
-            }
+                        
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            AuditTracker.auditTrail(accessPointType, authentication);
 
             logger.debug("Saves Access Point Type "+accessPointType );
             Optional<?> data = Optional.of(accessPointTypeService.save(accessPointType));

@@ -5,6 +5,7 @@
 //
 package bw.co.roguesystems.bench.access;
 
+import bw.co.roguesystems.bench.AuditTracker;
 import bw.co.roguesystems.bench.SearchObject;
 import bw.co.roguesystems.bench.keycloak.KeycloakService;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -19,6 +20,8 @@ import org.postgresql.util.PSQLException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -140,16 +143,10 @@ public class AccessPointApiImpl extends AccessPointApiBase {
     @Override
     public ResponseEntity<?> handleSave(AccessPointDTO accessPoint) {
         try {
-            logger.debug("Saves Access Point " + accessPoint);
-            if(StringUtils.isBlank(accessPoint.getId())) {
-                
-                accessPoint.setCreatedAt(LocalDateTime.now());
-                accessPoint.setCreatedBy(keycloakService.getJwt().getClaimAsString("preferred_username"));
-            } else {
+            
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            AuditTracker.auditTrail(accessPoint, authentication);
 
-                accessPoint.setModifiedAt(LocalDateTime.now());
-                accessPoint.setModifiedBy(keycloakService.getJwt().getClaimAsString("preferred_username"));
-            }
             Optional<?> data = Optional.of(accessPointService.save(accessPoint));
             ResponseEntity<?> response;
 

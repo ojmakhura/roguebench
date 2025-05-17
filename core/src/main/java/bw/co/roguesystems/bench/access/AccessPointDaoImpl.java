@@ -124,6 +124,11 @@ public class AccessPointDaoImpl
 
             target.setAccessPointType(this.accessPointTypeRepository.getReferenceById(source.getAccessPointType().getId()));
         }
+
+        if(source.getApplication() != null) {
+
+            target.setApplication(this.applicationRepository.getReferenceById(source.getApplication().getId()));
+        }
     }
     /**
      * {@inheritDoc}

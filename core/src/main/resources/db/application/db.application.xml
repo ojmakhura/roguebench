@@ -12,5 +12,11 @@
             <column name="name" value="Tau Secure"/>
         </insert>
     </changeSet>
+    <changeSet author="ojmakhura" id="tau_shell_update">
+        <update tableName="APPLICATION">
+            <column name="shell" value="true"/>
+            <where>CODE='TAU'</where>
+        </update>
+    </changeSet>
 
 </databaseChangeLog>

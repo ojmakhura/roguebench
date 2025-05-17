@@ -12,7 +12,9 @@ import { AuthorisationListDTO } from '@app/model/bw/co/roguesystems/bench/author
 import { AuthorisationCriteria } from '@app/model/bw/co/roguesystems/bench/authorisation/authorisation-criteria';
 import { AuthorisationApi } from '@app/service/bw/co/roguesystems/bench/authorisation/authorisation-api';
 
-export type AuthorisationApiState = AppState<any, any> & {};
+export type AuthorisationApiState = AppState<any, any> & {
+  authorisedApplications: AuthorisationDTO[];
+};
 
 const initialState: AuthorisationApiState = {
   data: null,
@@ -23,7 +25,8 @@ const initialState: AuthorisationApiState = {
   loading: false,
   success: false,
   messages: [],
-  loaderMessage: ''
+  loaderMessage: '',
+  authorisedApplications: []
 };
 
 export const AuthorisationApiStore = signalStore(
@@ -70,6 +73,68 @@ export const AuthorisationApiStore = signalStore(
         switchMap((data: any) => {
           patchState(store, { loading: true, loaderMessage: 'Loading ...' });
           return authorisationApi.findApplicationAuthorisations(data.applicationId, ).pipe(
+            tapResponse({
+              next: (dataList: AuthorisationListDTO[] | any[]) => {
+                patchState(
+                  store,
+                  {
+                     authorisedApplications: dataList,
+                     loading: false,
+                     error: false,
+                     success: true,
+                     messages: [`Found ${data.length} authorisations.`]
+                  }
+                );
+              },
+              error: (error: any) => {
+                patchState(
+                  store, {
+                    error,
+                    loading: false,
+                    success: false,
+                    messages: [error?.error ? error.error : error]
+                  }
+                );
+              },
+            }),
+          );
+        }),
+      ),
+      findAuthorisedApplicationsPaged: rxMethod<{roles: Set<string> | any , pageNumber: number | any , pageSize: number | any }>(
+        switchMap((data: any) => {
+          patchState(store, { loading: true, loaderMessage: 'Loading ...' });
+          return authorisationApi.findAuthorisedApplicationsPaged(data.roles, data.pageNumber, data.pageSize, ).pipe(
+            tapResponse({
+              next: (dataPage: Page<AuthorisationListDTO> | any) => {
+                patchState(
+                  store,
+                  {
+                    dataPage,
+                     loading: false,
+                     error: false,
+                     success: true,
+                     messages: [`Found ${dataPage.numberOfElements} of ${dataPage.totalElements} in page ${dataPage.number} of ${dataPage.totalPages}`,]
+                  }
+                );
+              },
+              error: (error: any) => {
+                patchState(
+                  store, {
+                    error,
+                    loading: false,
+                    success: false,
+                    messages: [error?.error ? error.error : error]
+                  }
+                );
+              },
+            }),
+          );
+        }),
+      ),
+      findAuthorisedApplications: rxMethod<{roles: Set<string> | any }>(
+        switchMap((data: any) => {
+          patchState(store, { loading: true, loaderMessage: 'Loading ...' });
+          return authorisationApi.findAuthorisedApplications(data.roles).pipe(
             tapResponse({
               next: (dataList: AuthorisationListDTO[] | any[]) => {
                 patchState(

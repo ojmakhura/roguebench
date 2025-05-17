@@ -312,4 +312,17 @@ public class AuthorisationServiceImpl
         return this.authorisationRepository.findByApplication(applicationId);
     }
 
+    @Override
+    protected Collection<AuthorisationListDTO> handleFindAuthorisedApplications(Set<String> roles) throws Exception {
+
+        return this.authorisationRepository.findAuthorisedApplications(roles);
+    }
+
+    @Override
+    protected Page<AuthorisationListDTO> handleFindAuthorisedApplications(Set<String> roles,
+            Integer pageNumber, Integer pageSize) throws Exception {
+        
+        return this.authorisationRepository.findAuthorisedApplications(roles, PageRequest.of(pageNumber, pageSize));
+    }
+
 }

@@ -92,8 +92,8 @@ export class AuthorisationEditorImplComponent extends AuthorisationEditorCompone
     });
 
     effect(() => {
-      this.authorisationEditorForm.roles = this.appStore.realmRoles();
       this.rolesBackingList = this.appStore.realmRoles();
+      this.rolesFilteredList$ = of(this.rolesBackingList);
     });
   }
 

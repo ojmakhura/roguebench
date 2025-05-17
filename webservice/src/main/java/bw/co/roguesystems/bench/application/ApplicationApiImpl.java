@@ -5,11 +5,15 @@
 //
 package bw.co.roguesystems.bench.application;
 
+import bw.co.roguesystems.bench.AuditTracker;
 import bw.co.roguesystems.bench.SearchObject;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.Optional;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -127,6 +131,8 @@ public class ApplicationApiImpl extends ApplicationApiBase {
     @Override
     public ResponseEntity<?> handleSave(ApplicationDTO application) {
         try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            AuditTracker.auditTrail(application, authentication);
             Optional<?> data = Optional.of(applicationService.save(application)); // TODO: Add custom code here;
             ResponseEntity<?> response;
 
@@ -179,6 +185,7 @@ public class ApplicationApiImpl extends ApplicationApiBase {
 
             return response;
         } catch (Exception e) {
+            e.printStackTrace();
             logger.error(e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }

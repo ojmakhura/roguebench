@@ -21,7 +21,7 @@
         <system></system>
         <url></url>
     </issueManagement>
-    <scm>
+    <scm> 
         <connection></connection>
         <developerConnection></developerConnection>
         <url></url>
@@ -90,7 +90,7 @@
                         <groupId>log4j</groupId>
                         <artifactId>log4j</artifactId>
                     </exclusion>
-                </exclusions>
+                </exclusions> 
             </dependency>
             <dependency>
                 <groupId>org.andromda.translationlibraries</groupId>
