@@ -38,7 +38,9 @@ public class AccessPointDaoImpl
         // TODO verify behavior of toAccessPointDTO
         super.toAccessPointDTO(source, target);
         // WARNING! No conversion for target.createdDate (can't convert source.getCreatedDate():java.util.Date to java.util.Date
+        target.setCreatedAt(source.getCreatedAt());
         // WARNING! No conversion for target.updatedDate (can't convert source.getUpdatedDate():java.util.Date to java.util.Date
+        target.setModifiedAt(source.getModifiedAt());
         // WARNING! No conversion for target.accessPointType (can't convert source.getAccessPointType():bw.co.bitri.cfpso.access.type.AccessPointType to bw.co.bitri.cfpso.access.type.AccessPointTypeDTO
 
         if(source.getAccessPointType() != null)

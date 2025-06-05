@@ -12,18 +12,17 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.persistence.EntityNotFoundException;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.NoSuchElementException;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
+import org.keycloak.adapters.jaas.AbstractKeycloakLoginModule.Auth;
 import org.postgresql.util.PSQLException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -416,7 +415,7 @@ public class AuthorisationApiImpl extends AuthorisationApiBase {
         
         try {
             logger.debug("Searches for Authorisation by roles " + roles);
-            return ResponseEntity.ok().body(authorisationService.findAuthorisedApplications(roles));
+            return ResponseEntity.ok().body(authorisationService.findAuthorisedApplications(null, roles));
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -432,7 +431,7 @@ public class AuthorisationApiImpl extends AuthorisationApiBase {
         
         try {
             logger.debug("Searches for Authorisation by roles " + roles);
-            Optional<?> data = Optional.of(authorisationService.findAuthorisedApplications(roles, pageNumber, pageSize)); // TODO: Add custom code here;
+            Optional<?> data = Optional.of(authorisationService.findAuthorisedApplications(null, roles, pageNumber, pageSize)); // TODO: Add custom code here;
             ResponseEntity<?> response;
 
             if (data.isPresent()) {
@@ -447,4 +446,23 @@ public class AuthorisationApiImpl extends AuthorisationApiBase {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
+
+    @Override
+    public ResponseEntity<?> handleFindMyAuthorisedApplications(String application) {
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        List<String> t= authentication.getAuthorities()
+                .stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.toList());
+
+        AuthorisationCriteria criteria = new AuthorisationCriteria();
+        criteria.setApplication(application);
+        criteria.setRoles(t);
+        criteria.setAccessPointType("APP");
+
+        return this.search(criteria);
+    }
+
 }

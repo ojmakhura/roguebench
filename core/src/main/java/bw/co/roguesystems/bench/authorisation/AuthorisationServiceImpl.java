@@ -9,17 +9,21 @@
 package bw.co.roguesystems.bench.authorisation;
 
 import bw.co.roguesystems.bench.PropertySearchOrder;
+import bw.co.roguesystems.bench.RoguebenchSpecifications;
 import bw.co.roguesystems.bench.SearchObject;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.MessageSource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -107,6 +111,42 @@ public class AuthorisationServiceImpl
         return authorisationDao.toAuthorisationListDTOCollection(authorisations);
     }
 
+    private Specification<Authorisation> getSpecification(AuthorisationCriteria criteria) {
+        
+        Specification<Authorisation> spec = null;
+
+        if(StringUtils.isNotBlank(criteria.getApplicationId())) {
+
+            spec = RoguebenchSpecifications.findByAttribute(criteria.getApplicationId(), "accessPoint", "application", "id");
+        }
+
+        if(StringUtils.isNotBlank(criteria.getAccessPointName())) {
+
+            Specification<Authorisation> nameSpec = RoguebenchSpecifications.findByAttribute(criteria.getAccessPointName(), "accessPoint", "name");
+            spec = spec == null ? nameSpec : spec.and(nameSpec);
+        }
+
+        if(StringUtils.isNotBlank(criteria.getAccessPointUrl())) {
+
+            Specification<Authorisation> urlSpec = RoguebenchSpecifications.findByAttribute(criteria.getAccessPointUrl(), "accessPoint", "url");
+            spec = spec == null ? urlSpec : spec.and(urlSpec);
+        }
+
+        if(StringUtils.isNotBlank(criteria.getAccessPointType())) {
+
+            Specification<Authorisation> typeSpec = RoguebenchSpecifications.findByAttribute(criteria.getAccessPointType(), "accessPoint", "accessPointType", "code");
+            spec = spec == null ? typeSpec : spec.and(typeSpec);
+        }
+
+        if(criteria.getRoles() != null && !criteria.getRoles().isEmpty()) {
+
+            Specification<Authorisation> rolesSpec = RoguebenchSpecifications.findByAttributeIn(criteria.getRoles(), "roles");
+            spec = spec == null ? rolesSpec : spec.and(rolesSpec);
+        }
+
+        return spec;
+    }
+
     /**
      * @see bw.co.bitri.cfpso.authorisation.AuthorisationService#search(AuthorisationCriteria)
      */
@@ -131,11 +171,15 @@ public class AuthorisationServiceImpl
             criteria.setAccessPointUrl("");
         }
 
-        Collection<AuthorisationListDTO> authorisations = roles.isEmpty()
-                ? authorisationRepository.searchNoRoles(criteria.getApplicationId(), criteria.getAccessPointName(), criteria.getAccessPointUrl(), criteria.getAccessPointType())
-                : authorisationRepository.search(criteria.getApplicationId(), criteria.getAccessPointName(), criteria.getAccessPointUrl(), criteria.getAccessPointType(), roles);
+        Specification<Authorisation> spec = getSpecification(criteria);
 
-        return authorisations;
+        Collection<Authorisation> authorisations = authorisationRepository.findAll(spec);
+
+        // Collection<AuthorisationListDTO> authorisations = roles.isEmpty()
+        //         ? authorisationRepository.searchNoRoles(criteria.getApplicationId(), criteria.getAccessPointName(), criteria.getAccessPointUrl(), criteria.getAccessPointType())
+        //         : authorisationRepository.search(criteria.getApplicationId(), criteria.getAccessPointName(), criteria.getAccessPointUrl(), criteria.getAccessPointType(), roles);
+
+        return authorisationDao.toAuthorisationListDTOCollection(authorisations);
     }
 
     /**
@@ -313,16 +357,16 @@ public class AuthorisationServiceImpl
     }
 
     @Override
-    protected Collection<AuthorisationListDTO> handleFindAuthorisedApplications(Set<String> roles) throws Exception {
+    protected Collection<AuthorisationListDTO> handleFindAuthorisedApplications(String application, Set<String> roles) throws Exception {
 
-        return this.authorisationRepository.findAuthorisedApplications(roles);
+        return this.authorisationRepository.findAuthorisedApplications(application, roles);
     }
 
     @Override
-    protected Page<AuthorisationListDTO> handleFindAuthorisedApplications(Set<String> roles,
+    protected Page<AuthorisationListDTO> handleFindAuthorisedApplications(String application, Set<String> roles,
             Integer pageNumber, Integer pageSize) throws Exception {
         
-        return this.authorisationRepository.findAuthorisedApplications(roles, PageRequest.of(pageNumber, pageSize));
+        return this.authorisationRepository.findAuthorisedApplications(application, roles, PageRequest.of(pageNumber, pageSize));
     }
 
 }

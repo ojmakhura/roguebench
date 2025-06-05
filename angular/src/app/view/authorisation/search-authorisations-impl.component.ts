@@ -92,6 +92,10 @@ export class SearchAuthorisationsImplComponent extends SearchAuthorisationsCompo
     });
 
     this.doSearch();
+
+    this.authorisationApiStore.findMyAuthorisedApplications({
+      application: ''
+    });
   }
 
   override beforeSearchAuthorisationsSearch(form: any): void {

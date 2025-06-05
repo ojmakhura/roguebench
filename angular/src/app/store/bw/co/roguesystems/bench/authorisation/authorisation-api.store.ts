@@ -140,6 +140,37 @@ export const AuthorisationApiStore = signalStore(
                 patchState(
                   store,
                   {
+                     authorisedApplications: dataList,
+                     loading: false,
+                     error: false,
+                     success: true,
+                     messages: [`Found ${data.length} authorisations.`]
+                  }
+                );
+              },
+              error: (error: any) => {
+                patchState(
+                  store, {
+                    error,
+                    loading: false,
+                    success: false,
+                    messages: [error?.error ? error.error : error]
+                  }
+                );
+              },
+            }),
+          );
+        }),
+      ),
+      findMyAuthorisedApplications: rxMethod<{application: string | any }>(
+        switchMap((data: any) => {
+          patchState(store, { loading: true, loaderMessage: 'Loading ...' });
+          return authorisationApi.findMyAuthorisedApplications(data.application).pipe(
+            tapResponse({
+              next: (dataList: AuthorisationListDTO[] | any[]) => {
+                patchState(
+                  store,
+                  {
                      dataList,
                      loading: false,
                      error: false,

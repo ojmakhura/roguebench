@@ -12,7 +12,7 @@ import { SearchObject } from '@app/model/search-object';
   providedIn: 'root'
 })
 export class AuthorisationApi {
-    
+
     protected path = '/authorisation';
 
     private http = inject(HttpClient);
@@ -30,6 +30,11 @@ export class AuthorisationApi {
     public findAuthorisedApplications(roles: Set<string> | any ): Observable<AuthorisationListDTO[] | any[]> {
 
         return this.http.get<AuthorisationListDTO[] | any[]>(`${this.path}/applications?roles=${roles}`);
+    }
+
+    public findMyAuthorisedApplications(application: String ): Observable<AuthorisationListDTO[] | any[]> {
+
+        return this.http.get<AuthorisationListDTO[] | any[]>(`${this.path}/applications/mine?application=${application}`);
     }
 
     public findAuthorisedApplicationsPaged(roles: Set<string> | any , pageNumber: number | any , pageSize: number | any ): Observable<Page<AuthorisationListDTO> | any> {
