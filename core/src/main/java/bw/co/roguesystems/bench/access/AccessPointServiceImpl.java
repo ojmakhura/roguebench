@@ -160,4 +160,10 @@ public class AccessPointServiceImpl
         return accessPointRepository.findApplicationAccessPoints(applicationId, PageRequest.of(pageNumber, pageSize));
         
     }
+
+    @Override
+    protected Collection<AccessPointListDTO> handleFindByParent(String parentId) throws Exception {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'handleFindByParent'");
+    }
 }

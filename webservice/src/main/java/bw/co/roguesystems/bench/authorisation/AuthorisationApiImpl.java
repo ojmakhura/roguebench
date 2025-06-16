@@ -465,4 +465,19 @@ public class AuthorisationApiImpl extends AuthorisationApiBase {
         return this.search(criteria);
     }
 
+    @Override
+    public ResponseEntity<?> handleFindByParentAndRoles(String parentId, Set<String> roles) {
+        
+        try {
+            logger.debug("Searches for Authorisation by Parent Id " + parentId + " and Roles: " + roles);
+            return ResponseEntity.ok().body(authorisationService.findByParentAndRoles(parentId, roles));
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            logger.error(e.getMessage());
+            return ResponseEntity.status(HttpStatus.NO_CONTENT)
+                    .body("Unknown error encountered. Please contact administrator.");
+        }
+    }
+
 }

@@ -331,4 +331,36 @@ public class AccessPointApiImpl extends AccessPointApiBase {
             return ResponseEntity.badRequest().body(message);
         }
     }
+
+
+    @Override
+    public ResponseEntity<?> handleFindByParent(String parentId) {
+        
+        try {
+            logger.debug("Searches for Access Point using Parent ID "+parentId);
+            Optional<?> data = Optional.of(accessPointService.findByParent(parentId));
+            ResponseEntity<?> response;
+
+            if(data.isPresent()) {
+                response = ResponseEntity.ok().body(data.get());
+            } else {
+                response = ResponseEntity.status(HttpStatus.NOT_FOUND).body(String.format("Access point with parent id %ld not found.", parentId));
+            }
+
+            return response;
+        } catch (Exception e) {
+            e.printStackTrace();
+
+            String message = e.getMessage();
+            if (e instanceof NoSuchElementException || e.getCause() instanceof NoSuchElementException
+                    || e instanceof EntityNotFoundException || e.getCause() instanceof EntityNotFoundException) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(String.format("Access point with parent id %d not found.", parentId));
+            } else {
+                message = "An unknown error has occured. Please contact the system administrator.";
+            }
+
+            logger.error(message, e);
+            return ResponseEntity.badRequest().body(message);
+        }
+    }
 }

@@ -369,4 +369,11 @@ public class AuthorisationServiceImpl
         return this.authorisationRepository.findAuthorisedApplications(application, roles, PageRequest.of(pageNumber, pageSize));
     }
 
+    @Override
+    protected Collection<AuthorisationListDTO> handleFindByParentAndRoles(String parentId, Set<String> roles)
+            throws Exception {
+        
+        return this.authorisationRepository.findByParentAndRoles(parentId, roles);
+    }
+
 }

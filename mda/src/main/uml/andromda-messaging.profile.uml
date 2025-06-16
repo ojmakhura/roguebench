@@ -1,20 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xmi:XMI xmi:version="20131001" xmlns:xmi="http://www.omg.org/spec/XMI/20131001" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" xmlns:standard="http://www.eclipse.org/uml2/5.0.0/UML/Profile/Standard" xmlns:uml="http://www.eclipse.org/uml2/5.0.0/UML">
   <uml:Profile xmi:id="_9_5_1_12ab03bf_1166891487968_530029_0" name="andromda-messaging" visibility="public" URI="" metamodelReference="_0metamodelReferenceandromda-messaging">
-    <eAnnotations xmi:id="_oxlA5EI7EfC8obaDYkLAsw" source="http://www.eclipse.org/uml2/2.0.0/UML">
-      <contents xmi:type="ecore:EPackage" xmi:id="_oxlA5UI7EfC8obaDYkLAsw" name="andromdamessaging" nsURI="http:///schemas/andromdamessaging/_orEIIEI7EfC8obaDYkLAsw/0" nsPrefix="andromdamessaging">
-        <eAnnotations xmi:id="_oxlA5kI7EfC8obaDYkLAsw" source="http://www.eclipse.org/uml2/2.0.0/UML">
-          <details xmi:id="_oxlA50I7EfC8obaDYkLAsw" key="originalName" value="andromda-messaging"/>
+    <eAnnotations xmi:id="_Yh_7-kruEfCPOeWbc4oZvA" source="http://www.eclipse.org/uml2/2.0.0/UML">
+      <contents xmi:type="ecore:EPackage" xmi:id="_Yh_7-0ruEfCPOeWbc4oZvA" name="andromdamessaging" nsURI="http:///schemas/andromdamessaging/_Ya-r4EruEfCPOeWbc4oZvA/0" nsPrefix="andromdamessaging">
+        <eAnnotations xmi:id="_Yh_7_EruEfCPOeWbc4oZvA" source="http://www.eclipse.org/uml2/2.0.0/UML">
+          <details xmi:id="_Yh_7_UruEfCPOeWbc4oZvA" key="originalName" value="andromda-messaging"/>
         </eAnnotations>
-        <eClassifiers xmi:type="ecore:EClass" xmi:id="_oxlA6EI7EfC8obaDYkLAsw" name="Topic">
-          <eAnnotations xmi:id="_oxlA6UI7EfC8obaDYkLAsw" source="http://www.eclipse.org/uml2/2.0.0/UML" references="_9_5_1_12ab03bf_1166891501609_942128_1"/>
-          <eStructuralFeatures xmi:type="ecore:EReference" xmi:id="_oxlA6kI7EfC8obaDYkLAsw" name="base_Node" ordered="false" lowerBound="1">
+        <eClassifiers xmi:type="ecore:EClass" xmi:id="_Yh_7_kruEfCPOeWbc4oZvA" name="Topic">
+          <eAnnotations xmi:id="_Yh_7_0ruEfCPOeWbc4oZvA" source="http://www.eclipse.org/uml2/2.0.0/UML" references="_9_5_1_12ab03bf_1166891501609_942128_1"/>
+          <eStructuralFeatures xmi:type="ecore:EReference" xmi:id="_Yh_8AEruEfCPOeWbc4oZvA" name="base_Node" ordered="false" lowerBound="1">
             <eType xmi:type="ecore:EClass" href="http://www.eclipse.org/uml2/5.0.0/UML#//Node"/>
           </eStructuralFeatures>
         </eClassifiers>
-        <eClassifiers xmi:type="ecore:EClass" xmi:id="_oxlA7EI7EfC8obaDYkLAsw" name="Queue">
-          <eAnnotations xmi:id="_oxlA7UI7EfC8obaDYkLAsw" source="http://www.eclipse.org/uml2/2.0.0/UML" references="_9_5_1_12ab03bf_1166891525921_893133_2"/>
-          <eStructuralFeatures xmi:type="ecore:EReference" xmi:id="_oxlA7kI7EfC8obaDYkLAsw" name="base_Node" ordered="false" lowerBound="1">
+        <eClassifiers xmi:type="ecore:EClass" xmi:id="_Yh_8AkruEfCPOeWbc4oZvA" name="Queue">
+          <eAnnotations xmi:id="_Yh_8A0ruEfCPOeWbc4oZvA" source="http://www.eclipse.org/uml2/2.0.0/UML" references="_9_5_1_12ab03bf_1166891525921_893133_2"/>
+          <eStructuralFeatures xmi:type="ecore:EReference" xmi:id="_Yh_8BEruEfCPOeWbc4oZvA" name="base_Node" ordered="false" lowerBound="1">
             <eType xmi:type="ecore:EClass" href="http://www.eclipse.org/uml2/5.0.0/UML#//Node"/>
           </eStructuralFeatures>
         </eClassifiers>
@@ -54,11 +54,11 @@
       <icon xmi:id="_12_1_2e90116_1238689309703_475523_340" content="" format="" location=""/>
     </packagedElement>
     <profileApplication xmi:id="_0profileApplicationandromda-messaging">
-      <eAnnotations xmi:id="_oyCS1UI7EfC8obaDYkLAsw" source="http://www.eclipse.org/uml2/2.0.0/UML">
+      <eAnnotations xmi:id="_YiqoRUruEfCPOeWbc4oZvA" source="http://www.eclipse.org/uml2/2.0.0/UML">
         <references xmi:type="ecore:EPackage" href="http://www.eclipse.org/uml2/5.0.0/UML/Profile/Standard#/"/>
       </eAnnotations>
       <appliedProfile href="pathmap://UML_PROFILES/Standard.profile.uml#_0"/>
     </profileApplication>
   </uml:Profile>
-  <standard:ModelLibrary xmi:id="_oyCS1kI7EfC8obaDYkLAsw" base_Package="_9_5_1_12ab03bf_1166891487968_530029_0"/>
+  <standard:ModelLibrary xmi:id="_YiqoRkruEfCPOeWbc4oZvA" base_Package="_9_5_1_12ab03bf_1166891487968_530029_0"/>
 </xmi:XMI>
