@@ -128,7 +128,7 @@ public class SecurityAuthorisationCheckAspect {
 
             for (AuthorisationListDTO auth : auths) {
 
-                for (String role : auth.getRoles().split(",")) {
+                for (String role : auth.getRoles()) {
                     if (role.equals("UNSECURED") || roles.contains(role) ) {
                         return true;
                     }

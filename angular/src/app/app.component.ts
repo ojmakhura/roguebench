@@ -218,7 +218,7 @@ export class AppComponent implements OnInit, OnDestroy {
                   routerLink: auth.accessPointUrl,
                   titleKey: auth.accessPoint,
                   icon: auth.accessPointIcon,
-                  roles: auth.roles.split(','),
+                  roles: auth.roles as string[],
                 };
               }),
             );

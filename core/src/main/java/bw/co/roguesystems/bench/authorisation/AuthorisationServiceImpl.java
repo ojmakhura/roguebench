@@ -11,6 +11,8 @@ package bw.co.roguesystems.bench.authorisation;
 import bw.co.roguesystems.bench.PropertySearchOrder;
 import bw.co.roguesystems.bench.RoguebenchSpecifications;
 import bw.co.roguesystems.bench.SearchObject;
+import jakarta.persistence.criteria.Join;
+
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -32,21 +34,18 @@ import org.springframework.transaction.annotation.Transactional;
  * @see bw.co.roguesystems.bench.authorisation.AuthorisationService
  */
 @Service("authorisationService")
-@Transactional(propagation = Propagation.REQUIRED, readOnly=false)
+@Transactional(propagation = Propagation.REQUIRED, readOnly = false)
 public class AuthorisationServiceImpl
-    extends AuthorisationServiceBase
-{
+        extends AuthorisationServiceBase {
     public AuthorisationServiceImpl(
-        AuthorisationDao authorisationDao,
-        AuthorisationRepository authorisationRepository,
-        MessageSource messageSource
-    ) {
-        
+            AuthorisationDao authorisationDao,
+            AuthorisationRepository authorisationRepository,
+            MessageSource messageSource) {
+
         super(
-            authorisationDao,
-            authorisationRepository,
-            messageSource
-        );
+                authorisationDao,
+                authorisationRepository,
+                messageSource);
     }
 
     /**
@@ -112,35 +111,44 @@ public class AuthorisationServiceImpl
     }
 
     private Specification<Authorisation> getSpecification(AuthorisationCriteria criteria) {
-        
+
         Specification<Authorisation> spec = null;
 
-        if(StringUtils.isNotBlank(criteria.getApplicationId())) {
+        if (StringUtils.isNotBlank(criteria.getApplicationId())) {
 
-            spec = RoguebenchSpecifications.findByAttribute(criteria.getApplicationId(), "accessPoint", "application", "id");
+            spec = RoguebenchSpecifications.findByAttribute(criteria.getApplicationId(), "accessPoint", "application",
+                    "id");
         }
 
-        if(StringUtils.isNotBlank(criteria.getAccessPointName())) {
+        if (StringUtils.isNotBlank(criteria.getAccessPointName())) {
 
-            Specification<Authorisation> nameSpec = RoguebenchSpecifications.findByAttribute(criteria.getAccessPointName(), "accessPoint", "name");
+            Specification<Authorisation> nameSpec = RoguebenchSpecifications
+                    .findByAttribute(criteria.getAccessPointName(), "accessPoint", "name");
             spec = spec == null ? nameSpec : spec.and(nameSpec);
         }
 
-        if(StringUtils.isNotBlank(criteria.getAccessPointUrl())) {
+        if (StringUtils.isNotBlank(criteria.getAccessPointUrl())) {
 
-            Specification<Authorisation> urlSpec = RoguebenchSpecifications.findByAttribute(criteria.getAccessPointUrl(), "accessPoint", "url");
+            Specification<Authorisation> urlSpec = RoguebenchSpecifications
+                    .findByAttribute(criteria.getAccessPointUrl(), "accessPoint", "url");
             spec = spec == null ? urlSpec : spec.and(urlSpec);
         }
 
-        if(StringUtils.isNotBlank(criteria.getAccessPointType())) {
+        if (StringUtils.isNotBlank(criteria.getAccessPointType())) {
 
-            Specification<Authorisation> typeSpec = RoguebenchSpecifications.findByAttribute(criteria.getAccessPointType(), "accessPoint", "accessPointType", "code");
+            Specification<Authorisation> typeSpec = RoguebenchSpecifications
+                    .findByAttribute(criteria.getAccessPointType(), "accessPoint", "accessPointType", "code");
             spec = spec == null ? typeSpec : spec.and(typeSpec);
         }
 
-        if(criteria.getRoles() != null && !criteria.getRoles().isEmpty()) {
+        if (criteria.getRoles() != null && !criteria.getRoles().isEmpty()) {
 
-            Specification<Authorisation> rolesSpec = RoguebenchSpecifications.findByAttributeIn(criteria.getRoles(), "roles");
+            Specification<Authorisation> rolesSpec = (root, query, cb) -> {
+                // Join the collection (Set<String> roles)
+                Join<Authorisation, String> rolesJoin = root.joinSet("roles");
+                // Filter where any role in the set matches the given roles
+                return rolesJoin.in(criteria.getRoles());
+            };
             spec = spec == null ? rolesSpec : spec.and(rolesSpec);
         }
 
@@ -176,8 +184,12 @@ public class AuthorisationServiceImpl
         Collection<Authorisation> authorisations = authorisationRepository.findAll(spec);
 
         // Collection<AuthorisationListDTO> authorisations = roles.isEmpty()
-        //         ? authorisationRepository.searchNoRoles(criteria.getApplicationId(), criteria.getAccessPointName(), criteria.getAccessPointUrl(), criteria.getAccessPointType())
-        //         : authorisationRepository.search(criteria.getApplicationId(), criteria.getAccessPointName(), criteria.getAccessPointUrl(), criteria.getAccessPointType(), roles);
+        // ? authorisationRepository.searchNoRoles(criteria.getApplicationId(),
+        // criteria.getAccessPointName(), criteria.getAccessPointUrl(),
+        // criteria.getAccessPointType())
+        // : authorisationRepository.search(criteria.getApplicationId(),
+        // criteria.getAccessPointName(), criteria.getAccessPointUrl(),
+        // criteria.getAccessPointType(), roles);
 
         return authorisationDao.toAuthorisationListDTOCollection(authorisations);
     }
@@ -207,13 +219,25 @@ public class AuthorisationServiceImpl
      *      Set<String>)
      */
     @Override
-    protected Collection<AuthorisationListDTO> handleGetAccessTypeCodeAuthorisations(String applicationId, Set<String> roles,
+    protected Collection<AuthorisationListDTO> handleGetAccessTypeCodeAuthorisations(String applicationId,
+            Set<String> roles,
             Set<String> accessPointTypeCodes)
             throws Exception {
 
+        Specification<Authorisation> spec = RoguebenchSpecifications.findByAttribute(applicationId, "accessPoint",
+                "application", "id");
+        spec = spec.and((root, query, cb) -> {
+            // Join the collection (Set<String> roles)
+            Join<Authorisation, String> rolesJoin = root.join("roles");
+            // Filter where any role in the set matches the given roles
+            return rolesJoin.in(roles);
+        });
+        spec = spec.and(RoguebenchSpecifications.findByAttributeIn(accessPointTypeCodes, "accessPoint",
+                "accessPointType", "code"));
+
         Collection<AuthorisationListDTO> auths = this.authorisationDao
-                .toAuthorisationListDTOCollection(this.authorisationRepository.findAccessTypeCodeAuthorisations(applicationId, roles,
-                        accessPointTypeCodes));
+                .toAuthorisationListDTOCollection(
+                        this.authorisationRepository.findAll(spec));
 
         String hash = roles.hashCode() + "" + accessPointTypeCodes.hashCode();
         // cacheManagement.put("authorisation", hash, auths);
@@ -226,9 +250,25 @@ public class AuthorisationServiceImpl
      *      Set<String>)
      */
     @Override
-    protected Collection<AuthorisationListDTO> handleFindByRolesAndUrl(String applicationId, String url, Set<String> roles)
+    protected Collection<AuthorisationListDTO> handleFindByRolesAndUrl(String applicationId, String url,
+            Set<String> roles)
             throws Exception {
-        Collection<AuthorisationListDTO> authsdtos = this.authorisationRepository.findByRolesAndUrl(applicationId, url, roles);
+
+        Specification<Authorisation> spec = RoguebenchSpecifications.findByAttribute(applicationId, "accessPoint",
+                "application", "id");
+        spec = spec.and(RoguebenchSpecifications.findByAttribute(url, "accessPoint", "url"));
+
+        if (roles != null && !roles.isEmpty()) {
+            spec = spec.and((root, query, cb) -> {
+                // Join the collection (Set<String> roles)
+                Join<Authorisation, String> rolesJoin = root.join("roles");
+                // Filter where any role in the set matches the given roles
+                return rolesJoin.in(roles);
+            });
+        }
+
+        Collection<AuthorisationListDTO> authsdtos = authorisationDao.toAuthorisationListDTOCollection(
+                this.authorisationRepository.findAll(spec));
 
         return authsdtos;
     }
@@ -240,25 +280,54 @@ public class AuthorisationServiceImpl
     protected Collection<AuthorisationListDTO> handleFindByUrlPrefix(String applicationId, String prefix)
             throws Exception {
 
-        Collection<AuthorisationListDTO> auths = this.authorisationRepository.findByUrlPrefix(applicationId, prefix);
+        Specification<Authorisation> spec = RoguebenchSpecifications.findByAttribute(applicationId, "accessPoint",
+                "application", "id");
+        spec = spec.and(RoguebenchSpecifications.findByAttributeStartingWithIgnoreCase(prefix, "accessPoint", "url"));
+
+        Collection<AuthorisationListDTO> auths = authorisationDao.toAuthorisationListDTOCollection(
+                this.authorisationRepository.findAll(spec));
 
         return auths;
     }
 
     @Override
-    protected Collection<AuthorisationListDTO> handleFindByUrlPrefixAndRoles(String applicationId, String prefix, Set<String> roles)
+    protected Collection<AuthorisationListDTO> handleFindByUrlPrefixAndRoles(String applicationId, String prefix,
+            Set<String> roles)
             throws Exception {
 
-        Collection<AuthorisationListDTO> auths = this.authorisationRepository.findByUrlPrefixAndRoles(applicationId, prefix, roles);
+        Specification<Authorisation> spec = RoguebenchSpecifications.findByAttribute(applicationId, "accessPoint",
+                "application", "id");
+        spec = spec.and(RoguebenchSpecifications.findByAttributeStartingWithIgnoreCase(prefix, "accessPoint", "url"));
+
+        if (roles != null && !roles.isEmpty()) {
+            spec = spec.and((root, query, cb) -> {
+                // Join the collection (Set<String> roles)
+                Join<Authorisation, String> rolesJoin = root.join("roles");
+                // Filter where any role in the set matches the given roles
+                return rolesJoin.in(roles);
+            });
+        }
+
+        Collection<AuthorisationListDTO> auths = authorisationDao.toAuthorisationListDTOCollection(
+                this.authorisationRepository.findAll(spec));
 
         return auths;
     }
 
     @Override
-    protected Collection<AuthorisationListDTO> handleFindByAccessUrlAndTypeCode(String applicationId, String url, String code)
+    protected Collection<AuthorisationListDTO> handleFindByAccessUrlAndTypeCode(String applicationId, String url,
+            String code)
             throws Exception {
 
-        return this.authorisationRepository.findByAccessUrlAndTypeCode(applicationId, url, code);
+        Specification<Authorisation> spec = RoguebenchSpecifications.findByAttribute(applicationId, "accessPoint",
+                "application", "id");
+
+        spec = spec.and(RoguebenchSpecifications.findByAttribute(url, "accessPoint", "url"));
+        spec = spec.and(RoguebenchSpecifications.findByAttribute(code, "accessPoint", "accessPointType", "code"));
+
+        Collection<Authorisation> authorisations = this.authorisationRepository.findAll(spec);
+
+        return authorisationDao.toAuthorisationListDTOCollection(authorisations);
     }
 
     /**
@@ -298,13 +367,14 @@ public class AuthorisationServiceImpl
         }
 
         Page<AuthorisationListDTO> authorisations = roles.isEmpty()
-                ? this.authorisationRepository.searchNoRoles(criteria.getCriteria().getApplicationId(), accessPointName, accessPointUrl, accessPointType,
+                ? this.authorisationRepository.searchNoRoles(criteria.getCriteria().getApplicationId(), accessPointName,
+                        accessPointUrl, accessPointType,
                         PageRequest.of(criteria.getPageNumber(), criteria.getPageSize()))
                 : this.authorisationRepository.search(
                         criteria.getCriteria().getApplicationId(),
-                        criteria.getCriteria().getAccessPointName(), criteria.getCriteria().getAccessPointUrl(), accessPointType, roles,
+                        criteria.getCriteria().getAccessPointName(), criteria.getCriteria().getAccessPointUrl(),
+                        accessPointType, roles,
                         PageRequest.of(criteria.getPageNumber(), criteria.getPageSize()));
-
 
         return authorisations;
     }
@@ -318,7 +388,8 @@ public class AuthorisationServiceImpl
             Set<String> accessPointTypeCodes, Integer pageNumber, Integer pageSize)
             throws Exception {
 
-        Page<Authorisation> authorisations = this.authorisationRepository.findAccessTypeCodeAuthorisations(applicationId, roles,
+        Page<Authorisation> authorisations = this.authorisationRepository.findAccessTypeCodeAuthorisations(
+                applicationId, roles,
                 accessPointTypeCodes, PageRequest.of(pageNumber, pageSize));
 
         Page<AuthorisationListDTO> p = authorisations == null ? null
@@ -332,13 +403,14 @@ public class AuthorisationServiceImpl
      *      Set<String>, Integer, Integer)
      */
     @Override
-    protected Page<AuthorisationListDTO> handleFindByRolesAndUrl(String applicationId, String url, Set<String> roles, Integer pageNumber,
+    protected Page<AuthorisationListDTO> handleFindByRolesAndUrl(String applicationId, String url, Set<String> roles,
+            Integer pageNumber,
             Integer pageSize)
             throws Exception {
 
         Page<AuthorisationListDTO> p = this.authorisationRepository.findByRolesAndUrl(applicationId, url, roles,
                 PageRequest.of(pageNumber, pageSize));
-        
+
         return p;
     }
 
@@ -346,34 +418,90 @@ public class AuthorisationServiceImpl
     protected Page<AuthorisationListDTO> handleFindApplicationAuthorisations(String applicationId,
             Integer pageNumber, Integer pageSize) throws Exception {
 
-        return this.authorisationRepository.findByApplication(applicationId, PageRequest.of(pageNumber, pageSize));
+        Specification<Authorisation> spec = RoguebenchSpecifications.findByAttribute(applicationId, "accessPoint",
+                "application", "id");
+
+        Page<Authorisation> authorisations = this.authorisationRepository.findAll(spec,
+                PageRequest.of(pageNumber, pageSize));
+
+        return authorisations.map(auth -> authorisationDao.toAuthorisationListDTO(auth));
     }
 
     @Override
     protected Collection<AuthorisationListDTO> handleFindApplicationAuthorisations(String applicationId)
             throws Exception {
 
-        return this.authorisationRepository.findByApplication(applicationId);
+        Specification<Authorisation> spec = RoguebenchSpecifications.findByAttribute(applicationId, "accessPoint",
+                "application", "id");
+
+        return authorisationDao.toAuthorisationListDTOCollection(
+                this.authorisationRepository.findAll(spec));
     }
 
     @Override
-    protected Collection<AuthorisationListDTO> handleFindAuthorisedApplications(String application, Set<String> roles) throws Exception {
+    protected Collection<AuthorisationListDTO> handleFindAuthorisedApplications(String application, Set<String> roles)
+            throws Exception {
 
-        return this.authorisationRepository.findAuthorisedApplications(application, roles);
+        Specification<Authorisation> spec = (root, query, cb) -> {
+            // Join the collection (Set<String> roles)
+            Join<Authorisation, String> rolesJoin = root.join("roles");
+            // Filter where any role in the set matches the given roles
+            return rolesJoin.in(roles);
+        };
+
+        if (StringUtils.isNotBlank(application)) {
+            Specification<Authorisation> appSpec = RoguebenchSpecifications.findByAttribute(application, "accessPoint",
+                    "application", "id");
+            spec = spec == null ? appSpec : spec.and(appSpec);
+        }
+
+        spec = spec.and(RoguebenchSpecifications.findByAttribute("APP", "accessPoint", "accessPointType", "code"));
+
+        Collection<Authorisation> authorisations = this.authorisationRepository.findAll(spec);
+
+        return authorisationDao.toAuthorisationListDTOCollection(authorisations);
     }
 
     @Override
     protected Page<AuthorisationListDTO> handleFindAuthorisedApplications(String application, Set<String> roles,
             Integer pageNumber, Integer pageSize) throws Exception {
-        
-        return this.authorisationRepository.findAuthorisedApplications(application, roles, PageRequest.of(pageNumber, pageSize));
+
+        Specification<Authorisation> spec = RoguebenchSpecifications.findByAttribute(application, "accessPoint",
+                "application", "id");
+        if (roles != null && !roles.isEmpty()) {
+            Specification<Authorisation> rolesSpec = (root, query, cb) -> {
+                // Join the collection (Set<String> roles)
+                Join<Authorisation, String> rolesJoin = root.joinSet("roles");
+                // Filter where any role in the set matches the given roles
+                return rolesJoin.in(roles);
+            };
+            spec = spec == null ? rolesSpec : spec.and(rolesSpec);
+        }
+
+        Page<Authorisation> authorisations = this.authorisationRepository.findAll(spec,
+                PageRequest.of(pageNumber, pageSize));
+
+        return authorisations.map(auth -> authorisationDao.toAuthorisationListDTO(auth));
     }
 
     @Override
     protected Collection<AuthorisationListDTO> handleFindByParentAndRoles(String parentId, Set<String> roles)
             throws Exception {
-        
-        return this.authorisationRepository.findByParentAndRoles(parentId, roles);
+
+        Specification<Authorisation> spec = RoguebenchSpecifications.findByAttribute(parentId, "parent", "id");
+        if (roles != null && !roles.isEmpty()) {
+            Specification<Authorisation> rolesSpec = (root, query, cb) -> {
+                // Join the collection (Set<String> roles)
+                Join<Authorisation, String> rolesJoin = root.joinSet("roles");
+                // Filter where any role in the set matches the given roles
+                return rolesJoin.in(roles);
+            };
+            spec = spec == null ? rolesSpec : spec.and(rolesSpec);
+        }
+
+        Collection<Authorisation> authorisations = this.authorisationRepository.findAll(spec);
+
+        return authorisationDao.toAuthorisationListDTOCollection(authorisations);
     }
 
 }
