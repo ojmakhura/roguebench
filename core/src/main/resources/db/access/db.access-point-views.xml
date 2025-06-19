@@ -1,0 +1,124 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd">
+
+    <changeSet author="ojmakhura" id="access_point_views">
+        <insert tableName="ACCESS_POINT">
+            <column name="ID" valueComputed="(select gen_random_uuid())"/>
+            <column name="CREATED_AT" value="NOW()"/>
+            <column name="CREATED_BY" value="liquibase"/>
+            <column name="NAME" value="Application Edit"/>
+            <column name="URL" value="/application/edit"/>
+            <column name="PARENT_FK" valueComputed="(SELECT id from ACCESS_POINT WHERE name='Application')"/>
+            <column name="ACCESS_POINT_TYPE_FK" valueComputed="(SELECT id from ACCESS_POINT_TYPE WHERE code='VIEW')"/>
+            <column name="APPLICATION_FK" valueComputed="(SELECT id from APPLICATION WHERE code='TAU')"/>
+        </insert>
+        <insert tableName="ACCESS_POINT">
+            <column name="ID" valueComputed="(select gen_random_uuid())"/>
+            <column name="CREATED_AT" value="NOW()"/>
+            <column name="CREATED_BY" value="liquibase"/>
+            <column name="NAME" value="Application Search"/>
+            <column name="URL" value="/application/search"/>
+            <column name="PARENT_FK" valueComputed="(SELECT id from ACCESS_POINT WHERE name='Application')"/>
+            <column name="ACCESS_POINT_TYPE_FK" valueComputed="(SELECT id from ACCESS_POINT_TYPE WHERE code='VIEW')"/>
+            <column name="APPLICATION_FK" valueComputed="(SELECT id from APPLICATION WHERE code='TAU')"/>
+        </insert>
+        <insert tableName="ACCESS_POINT">
+            <column name="ID" valueComputed="(select gen_random_uuid())"/>
+            <column name="CREATED_AT" value="NOW()"/>
+            <column name="CREATED_BY" value="liquibase"/>
+            <column name="NAME" value="Application Details"/>
+            <column name="URL" value="/application/details"/>
+            <column name="PARENT_FK" valueComputed="(SELECT id from ACCESS_POINT WHERE name='Application')"/>
+            <column name="ACCESS_POINT_TYPE_FK" valueComputed="(SELECT id from ACCESS_POINT_TYPE WHERE code='VIEW')"/>
+            <column name="APPLICATION_FK" valueComputed="(SELECT id from APPLICATION WHERE code='TAU')"/>
+        </insert>
+        <!-- Access Point Type -->
+        <insert tableName="ACCESS_POINT">
+            <column name="ID" valueComputed="(select gen_random_uuid())"/>
+            <column name="CREATED_AT" value="NOW()"/>
+            <column name="CREATED_BY" value="liquibase"/>
+            <column name="NAME" value="Access Point Type Edit"/>
+            <column name="URL" value="/access/type/edit"/>
+            <column name="PARENT_FK" valueComputed="(SELECT id from ACCESS_POINT WHERE name='Access Point Type')"/>
+            <column name="ACCESS_POINT_TYPE_FK" valueComputed="(SELECT id from ACCESS_POINT_TYPE WHERE code='VIEW')"/>
+            <column name="APPLICATION_FK" valueComputed="(SELECT id from APPLICATION WHERE code='TAU')"/>
+        </insert>
+        <insert tableName="ACCESS_POINT">
+            <column name="ID" valueComputed="(select gen_random_uuid())"/>
+            <column name="CREATED_AT" value="NOW()"/>
+            <column name="CREATED_BY" value="liquibase"/>
+            <column name="NAME" value="Access Point Type Search"/>
+            <column name="URL" value="/access/type/search"/>
+            <column name="PARENT_FK" valueComputed="(SELECT id from ACCESS_POINT WHERE name='Access Point Type')"/>
+            <column name="ACCESS_POINT_TYPE_FK" valueComputed="(SELECT id from ACCESS_POINT_TYPE WHERE code='VIEW')"/>
+            <column name="APPLICATION_FK" valueComputed="(SELECT id from APPLICATION WHERE code='TAU')"/>
+        </insert>
+        <!-- Access Point -->
+        <insert tableName="ACCESS_POINT">
+            <column name="ID" valueComputed="(select gen_random_uuid())"/>
+            <column name="CREATED_AT" value="NOW()"/>
+            <column name="CREATED_BY" value="liquibase"/>
+            <column name="name" value="Access Point Edit"/>
+            <column name="URL" value="/access/edit"/>
+            <column name="PARENT_FK" valueComputed="(SELECT id from ACCESS_POINT WHERE name='Access Point')"/>
+            <column name="ACCESS_POINT_TYPE_FK" valueComputed="(SELECT id from ACCESS_POINT_TYPE WHERE code='VIEW')"/>
+            <column name="APPLICATION_FK" valueComputed="(SELECT id from APPLICATION WHERE code='TAU')"/>
+        </insert>
+        <insert tableName="ACCESS_POINT">
+            <column name="ID" valueComputed="(select gen_random_uuid())"/>
+            <column name="CREATED_AT" value="NOW()"/>
+            <column name="CREATED_BY" value="liquibase"/>
+            <column name="NAME" value="Access Point Search"/>
+            <column name="URL" value="/access/search"/>
+            <column name="PARENT_FK" valueComputed="(SELECT id from ACCESS_POINT WHERE name='Access Point')"/>
+            <column name="ACCESS_POINT_TYPE_FK" valueComputed="(SELECT id from ACCESS_POINT_TYPE WHERE code='VIEW')"/>
+            <column name="APPLICATION_FK" valueComputed="(SELECT id from APPLICATION WHERE code='TAU')"/>
+        </insert>
+        <!-- Authorisation -->
+        <insert tableName="ACCESS_POINT">
+            <column name="ID" valueComputed="(select gen_random_uuid())"/>
+            <column name="CREATED_AT" value="NOW()"/>
+            <column name="CREATED_BY" value="liquibase"/>
+            <column name="name" value="Authorisation Edit"/>
+            <column name="URL" value="/authorisation/edit"/>
+            <column name="PARENT_FK" valueComputed="(SELECT id from ACCESS_POINT WHERE name='Authorisation')"/>
+            <column name="ACCESS_POINT_TYPE_FK" valueComputed="(SELECT id from ACCESS_POINT_TYPE WHERE code='VIEW')"/>
+            <column name="APPLICATION_FK" valueComputed="(SELECT id from APPLICATION WHERE code='TAU')"/>
+        </insert>
+        <insert tableName="ACCESS_POINT">
+            <column name="ID" valueComputed="(select gen_random_uuid())"/>
+            <column name="CREATED_AT" value="NOW()"/>
+            <column name="CREATED_BY" value="liquibase"/>
+            <column name="name" value="Authorisation Search"/>
+            <column name="URL" value="/authorisation/search"/>
+            <column name="PARENT_FK" valueComputed="(SELECT id from ACCESS_POINT WHERE name='Authorisation')"/>
+            <column name="ACCESS_POINT_TYPE_FK" valueComputed="(SELECT id from ACCESS_POINT_TYPE WHERE code='VIEW')"/>
+            <column name="APPLICATION_FK" valueComputed="(SELECT id from APPLICATION WHERE code='TAU')"/>
+        </insert>
+        <!-- User -->
+        <insert tableName="ACCESS_POINT">
+            <column name="ID" valueComputed="(select gen_random_uuid())"/>
+            <column name="CREATED_AT" value="NOW()"/>
+            <column name="CREATED_BY" value="liquibase"/>
+            <column name="NAME" value="User Edit"/>
+            <column name="URL" value="/user/edit"/>
+            <column name="PARENT_FK" valueComputed="(SELECT id from ACCESS_POINT WHERE name='User')"/>
+            <column name="ACCESS_POINT_TYPE_FK" valueComputed="(SELECT id from ACCESS_POINT_TYPE WHERE code='VIEW')"/>
+            <column name="APPLICATION_FK" valueComputed="(SELECT id from APPLICATION WHERE code='TAU')"/>
+        </insert>
+        <insert tableName="ACCESS_POINT">
+            <column name="ID" valueComputed="(select gen_random_uuid())"/>
+            <column name="CREATED_AT" value="NOW()"/>
+            <column name="CREATED_BY" value="liquibase"/>
+            <column name="NAME" value="User Search"/>
+            <column name="URL" value="/user/search"/>
+            <column name="PARENT_FK" valueComputed="(SELECT id from ACCESS_POINT WHERE name='User')"/>
+            <column name="ACCESS_POINT_TYPE_FK" valueComputed="(SELECT id from ACCESS_POINT_TYPE WHERE code='VIEW')"/>
+            <column name="APPLICATION_FK" valueComputed="(SELECT id from APPLICATION WHERE code='TAU')"/>
+        </insert>
+    </changeSet>
+    
+
+</databaseChangeLog>

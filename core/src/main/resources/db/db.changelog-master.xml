@@ -14,6 +14,7 @@
     <include file="access/db.access-point-menus.xml" relativeToChangelogFile="true"/>
     <include file="access/db.access-point-type-api.xml" relativeToChangelogFile="true"/>
     <include file="access/db.access-point-api.xml" relativeToChangelogFile="true"/>
+    <include file="access/db.access-point-views.xml" relativeToChangelogFile="true"/>
 
     <!-- District initialisation -->
     <include file="authorisation/db.authorisation.xml" relativeToChangelogFile="true"/>

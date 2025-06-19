@@ -117,4 +117,13 @@
             <column name="ACCESS_POINT_TYPE_FK" valueComputed="(SELECT id from ACCESS_POINT_TYPE WHERE code='API')"/>
         </insert>
     </changeSet>
+    <changeSet id="findByParentAndRoles_unsecure" author="ojmakhura">
+        <sqlFile  dbms="postgresql"
+            splitStatements="false"
+            stripComments="false"
+            encoding="utf8"
+            relativeToChangelogFile="true"
+            endDelimiter=";;"
+            path="../authorisation/missing_authorisations.sql" />
+    </changeSet>
 </databaseChangeLog>

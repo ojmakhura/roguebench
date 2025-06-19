@@ -50,5 +50,26 @@
             <column name="APPLICATION_FK" valueComputed="(SELECT id from APPLICATION WHERE code='TAU')"/>
         </insert>
     </changeSet>
-
+    <changeSet id="menus_position" author="ojmakhura">
+        <update tableName="ACCESS_POINT">
+            <column name="POSITION" value="1"/>
+            <where>NAME='Application'</where>
+        </update>
+        <update tableName="ACCESS_POINT">
+            <column name="POSITION" value="2"/>
+            <where>NAME='Access Point Type'</where>
+        </update>
+        <update tableName="ACCESS_POINT">
+            <column name="POSITION" value="3"/>
+            <where>NAME='Access Point'</where>
+        </update>
+        <update tableName="ACCESS_POINT">
+            <column name="POSITION" value="4"/>
+            <where>NAME='Authorisation'</where>
+        </update>
+        <update tableName="ACCESS_POINT">
+            <column name="POSITION" value="5"/>
+            <where>NAME='User'</where>
+        </update>
+    </changeSet>
 </databaseChangeLog>

@@ -135,6 +135,7 @@ public class AuthorisationDaoImpl
             target.setAccessPoint(point.getName());
             target.setAccessPointId(point.getId());
             target.setAccessPointUrl(point.getUrl());
+            target.setAccessPointPosition(point.getPosition());
 
             AccessPointType type = accessPointTypeRepository.findById(point.getAccessPointType().getId()).orElse(new AccessPointType());
 
@@ -144,6 +145,7 @@ public class AuthorisationDaoImpl
             //  {
             //      target.setRoles(source.getRoles());
             //  }
+
         }
     }
 
