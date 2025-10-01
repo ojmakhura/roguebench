@@ -55,6 +55,12 @@ public class AuthorisationDaoImpl
             accessPoint.setType(source.getAccessPoint().getAccessPointType().getName());
             accessPoint.setApplicationId(source.getAccessPoint().getApplication().getId());
             accessPoint.setApplication(source.getAccessPoint().getApplication().getName());
+            
+            if(source.getAccessPoint().getParent() != null) {
+                accessPoint.setParentId(source.getAccessPoint().getParent().getId());
+                accessPoint.setParent(source.getAccessPoint().getParent().getName());
+            }
+
             target.setAccessPoint(accessPoint);
         }
     }
@@ -83,7 +89,9 @@ public class AuthorisationDaoImpl
         }
         else
         {
-            return this.load(authorisationDTO.getId());
+            return this.authorisationRepository.findById(authorisationDTO.getId())
+                .orElseThrow(() -> new IllegalArgumentException(
+                    "Authorisation with id '" + authorisationDTO.getId() + "' does not exist."));
         }
     }
 
@@ -141,11 +149,14 @@ public class AuthorisationDaoImpl
 
             target.setAccessPointType(type.getName());
 
-            //  if(source.getRoles() != null)
-            //  {
-            //      target.setRoles(source.getRoles());
-            //  }
+            if(source.getAccessPoint().getParent() != null)
+            {
+                target.setParent(source.getAccessPoint().getParent().getName());
+                target.setParentId(source.getAccessPoint().getParent().getId());
+            }
 
+            target.setApplication(point.getApplication().getName());
+            target.setApplicationId(point.getApplication().getId());
         }
     }
 
@@ -173,7 +184,9 @@ public class AuthorisationDaoImpl
         }
         else
         {
-            return this.load(authorisationListDTO.getId());
+            return this.authorisationRepository.findById(authorisationListDTO.getId())
+                .orElseThrow(() -> new IllegalArgumentException(
+                    "Authorisation with id '" + authorisationListDTO.getId() + "' does not exist."));
         }
     }
 

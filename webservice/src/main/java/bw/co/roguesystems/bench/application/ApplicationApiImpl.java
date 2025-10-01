@@ -6,8 +6,11 @@
 package bw.co.roguesystems.bench.application;
 
 import bw.co.roguesystems.bench.AuditTracker;
+import bw.co.roguesystems.bench.RestApiResponse;
 import bw.co.roguesystems.bench.SearchObject;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import java.util.Collection;
+import org.springframework.data.domain.Page;
 import java.util.Optional;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -33,161 +36,156 @@ public class ApplicationApiImpl extends ApplicationApiBase {
 
 
     @Override
-    public ResponseEntity<ApplicationDTO> handleFindById(String id) {
-        // try {
-            Optional<ApplicationDTO> data = Optional.of(applicationService.findById(id)); // TODO: Add custom code here;
-            ResponseEntity<ApplicationDTO> response;
-
-            if(data.isPresent()) {
-                response = ResponseEntity.status(HttpStatus.OK).body(data.get());
-            } else {
-                response = ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-            }
-
-            return response;
-        // } catch (Exception e) {
-        //     logger.error(e.getMessage());
-        //     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-        // }
-    }
-
-    @Override
-    public ResponseEntity<?> handleGetAll() {
+    public ResponseEntity<RestApiResponse<ApplicationDTO>> handleFindById(String id) {
+        RestApiResponse<ApplicationDTO> responseData = new RestApiResponse<>();
         try {
-            Optional<?> data = Optional.of(applicationService.getAll()); // TODO: Add custom code here;
-            ResponseEntity<?> response;
-
-            if(data.isPresent()) {
-                response = ResponseEntity.status(HttpStatus.OK).body(data.get());
+            ApplicationDTO data = applicationService.findById(id);
+            if(data != null) {
+                responseData.setData(data);
+                responseData.setSuccess(true);
+                responseData.setMessage("Application found successfully.");
+                return ResponseEntity.status(HttpStatus.OK).body(responseData);
             } else {
-                response = ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+                responseData.setSuccess(false);
+                responseData.setMessage("Application not found.");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(responseData);
             }
-
-            return response;
         } catch (Exception e) {
             logger.error(e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            responseData.setSuccess(false);
+            responseData.setMessage(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseData);
         }
     }
 
     @Override
-    public ResponseEntity<?> handleGetAllPaged(Integer pageNumber, Integer pageSize) {
+    public ResponseEntity<RestApiResponse<Collection<ApplicationDTO>>> handleGetAll() {
+        RestApiResponse<Collection<ApplicationDTO>> responseData = new RestApiResponse<>();
         try {
-            Optional<?> data = Optional.of(applicationService.getAll(pageNumber, pageSize)); // TODO: Add custom code here;
-            ResponseEntity<?> response;
-
-            if(data.isPresent()) {
-                response = ResponseEntity.status(HttpStatus.OK).body(data.get());
-            } else {
-                response = ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-            }
-
-            return response;
+            Collection<ApplicationDTO> data = applicationService.getAll();
+            responseData.setData(data);
+            responseData.setSuccess(true);
+            responseData.setMessage("Applications retrieved successfully.");
+            return ResponseEntity.status(HttpStatus.OK).body(responseData);
         } catch (Exception e) {
             logger.error(e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            responseData.setSuccess(false);
+            responseData.setMessage(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseData);
         }
     }
 
     @Override
-    public ResponseEntity<?> handlePagedSearch(SearchObject<String> criteria) {
+    public ResponseEntity<RestApiResponse<Page<ApplicationDTO>>> handleGetAllPaged(Integer pageNumber, Integer pageSize) {
+        RestApiResponse<Page<ApplicationDTO>> responseData = new RestApiResponse<>();
         try {
-            Optional<?> data = Optional.of(applicationService.search(criteria)); // TODO: Add custom code here;
-            ResponseEntity<?> response;
+            Page<ApplicationDTO> data = applicationService.getAll(pageNumber, pageSize);
+            responseData.setData(data);
+            responseData.setSuccess(true);
+            responseData.setMessage("Applications page retrieved successfully.");
+            return ResponseEntity.status(HttpStatus.OK).body(responseData);
+        } catch (Exception e) {
+            logger.error(e.getMessage());
+            responseData.setSuccess(false);
+            responseData.setMessage(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseData);
+        }
+    }
 
-            if(data.isPresent()) {
-                response = ResponseEntity.status(HttpStatus.OK).body(data.get());
-            } else {
-                response = ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-            }
-
-            return response;
+    @Override
+    public ResponseEntity<RestApiResponse<Page<ApplicationDTO>>> handlePagedSearch(SearchObject<String> criteria) {
+        RestApiResponse<Page<ApplicationDTO>> responseData = new RestApiResponse<>();
+        try {
+            Page<ApplicationDTO> data = applicationService.search(criteria);
+            responseData.setData(data);
+            responseData.setSuccess(true);
+            responseData.setMessage("Application search completed successfully.");
+            return ResponseEntity.status(HttpStatus.OK).body(responseData);
         } catch (Exception e) {
             e.printStackTrace();
             logger.error(e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            responseData.setSuccess(false);
+            responseData.setMessage(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseData);
         }
     }
 
     @Override
-    public ResponseEntity<?> handleRemove(String id) {
+    public ResponseEntity<RestApiResponse<Boolean>> handleRemove(String id) {
+        RestApiResponse<Boolean> responseData = new RestApiResponse<>();
         try {
-            Optional<?> data = Optional.of(applicationService.remove(id)); // TODO: Add custom code here;
-            ResponseEntity<?> response;
-
-            if(data.isPresent()) {
-                response = ResponseEntity.status(HttpStatus.OK).body(data.get());
-            } else {
-                response = ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-            }
-
-            return response;
+            Boolean data = applicationService.remove(id);
+            responseData.setData(data);
+            responseData.setSuccess(true);
+            responseData.setMessage("Application removed successfully.");
+            return ResponseEntity.status(HttpStatus.OK).body(responseData);
         } catch (Exception e) {
             logger.error(e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            responseData.setSuccess(false);
+            responseData.setMessage(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseData);
         }
     }
 
     @Override
-    public ResponseEntity<?> handleSave(ApplicationDTO application) {
+    public ResponseEntity<RestApiResponse<ApplicationDTO>> handleSave(ApplicationDTO application) {
+        RestApiResponse<ApplicationDTO> responseData = new RestApiResponse<>();
         try {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             AuditTracker.auditTrail(application, authentication);
-            Optional<?> data = Optional.of(applicationService.save(application)); // TODO: Add custom code here;
-            ResponseEntity<?> response;
-
-            if(data.isPresent()) {
-                response = ResponseEntity.status(HttpStatus.OK).body(data.get());
-            } else {
-                response = ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-            }
-
-            return response;
+            ApplicationDTO data = applicationService.save(application);
+            responseData.setData(data);
+            responseData.setSuccess(true);
+            responseData.setMessage("Application saved successfully.");
+            return ResponseEntity.status(HttpStatus.OK).body(responseData);
         } catch (Exception e) {
             logger.error(e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            responseData.setSuccess(false);
+            responseData.setMessage(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseData);
         }
     }
 
     @Override
-    public ResponseEntity<?> handleSearch(String criteria) {
+    public ResponseEntity<RestApiResponse<Collection<ApplicationDTO>>> handleSearch(String criteria) {
+        RestApiResponse<Collection<ApplicationDTO>> responseData = new RestApiResponse<>();
         try {
-            Optional<?> data = Optional.of(applicationService.search(criteria, null)); // TODO: Add custom code here;
-            ResponseEntity<?> response;
-
-            if(data.isPresent()) {
-                response = ResponseEntity.status(HttpStatus.OK).body(data.get());
-            } else {
-                response = ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-            }
-
-            return response;
+            Collection<ApplicationDTO> data = applicationService.search(criteria, null);
+            responseData.setData(data);
+            responseData.setSuccess(true);
+            responseData.setMessage("Application search completed successfully.");
+            return ResponseEntity.status(HttpStatus.OK).body(responseData);
         } catch (Exception e) {
             e.printStackTrace();
             logger.error(e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            responseData.setSuccess(false);
+            responseData.setMessage(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseData);
         }
     }
 
 
     @Override
-    public ResponseEntity<?> handleFindByCode(String code) {
-        
+    public ResponseEntity<RestApiResponse<ApplicationDTO>> handleFindByCode(String code) {
+        RestApiResponse<ApplicationDTO> responseData = new RestApiResponse<>();
         try {
-            Optional<ApplicationDTO> data = Optional.of(applicationService.findByCode(code)); // TODO: Add custom code here;
-            ResponseEntity<ApplicationDTO> response;
-
-            if(data.isPresent()) {
-                response = ResponseEntity.status(HttpStatus.OK).body(data.get());
+            ApplicationDTO data = applicationService.findByCode(code);
+            if(data != null) {
+                responseData.setData(data);
+                responseData.setSuccess(true);
+                responseData.setMessage("Application found by code successfully.");
+                return ResponseEntity.status(HttpStatus.OK).body(responseData);
             } else {
-                response = ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+                responseData.setSuccess(false);
+                responseData.setMessage("Application not found.");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(responseData);
             }
-
-            return response;
         } catch (Exception e) {
             e.printStackTrace();
             logger.error(e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            responseData.setSuccess(false);
+            responseData.setMessage(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseData);
         }
     }
 }

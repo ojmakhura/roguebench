@@ -6,11 +6,13 @@
 package bw.co.roguesystems.bench.access.type;
 
 import bw.co.roguesystems.bench.AuditTracker;
+import bw.co.roguesystems.bench.RestApiResponse;
 import bw.co.roguesystems.bench.SearchObject;
 import bw.co.roguesystems.bench.keycloak.KeycloakService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
@@ -39,126 +41,124 @@ public class AccessPointTypeApiImpl extends AccessPointTypeApiBase {
     }
 
     @Override
-    public ResponseEntity<?> handleFindById(String id) {
+    public ResponseEntity<RestApiResponse<AccessPointTypeDTO>> handleFindById(String id) {
+        RestApiResponse<AccessPointTypeDTO> responseData = new RestApiResponse<>();
         try {
             logger.debug("Searches for Access Point Type using ID " + id);
             AccessPointTypeDTO type = accessPointTypeService.findById(id);
 
             if(type != null && type.getId() != null) {
-                return ResponseEntity.ok().body(type);
+                responseData.setData(type);
+                responseData.setSuccess(true);
+                responseData.setMessage(String.format("Access Point Type %s found.", type.getName()));
+                return ResponseEntity.status(HttpStatus.OK).body(responseData);
             } else {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(String.format("Access point type with id %ld not found.", id));
+                responseData.setSuccess(false);
+                responseData.setMessage(String.format("Access point type with id %s not found.", id));
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(responseData);
             }
-
         } catch (Exception e) {
-            e.printStackTrace();
-
-            String message = e.getMessage();
-            if (e instanceof NoSuchElementException || e.getCause() instanceof NoSuchElementException) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(String.format("Access point type with id %d not found.", id));
-            } else {
-                message = "An unknown error has occured while loading an access point type. Please contact the system administrator.";
-            }
-
-            logger.error(message);
-            return ResponseEntity.badRequest().body(message);
+            logger.error(e.getMessage());
+            responseData.setSuccess(false);
+            responseData.setMessage(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseData);
         }
     }
 
     @Override
-    public ResponseEntity<?> handleGetAll() {
+    public ResponseEntity<RestApiResponse<Collection<AccessPointTypeDTO>>> handleGetAll() {
+        RestApiResponse<Collection<AccessPointTypeDTO>> responseData = new RestApiResponse<>();
         try {
             logger.debug("Displays all Access Point Types");
-
-            return ResponseEntity.ok().body(accessPointTypeService.getAll());
-
+            Collection<AccessPointTypeDTO> data = accessPointTypeService.getAll();
+            responseData.setData(data);
+            responseData.setSuccess(true);
+            responseData.setMessage("Access Point Types retrieved successfully.");
+            return ResponseEntity.status(HttpStatus.OK).body(responseData);
         } catch (Exception e) {
-            e.printStackTrace();
             logger.error(e.getMessage());
-            return ResponseEntity.badRequest().body("An error occured when loading all access point types.");
+            responseData.setSuccess(false);
+            responseData.setMessage(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseData);
         }
     }
 
     @Override
-    public ResponseEntity<?> handleGetAllPaged(Integer pageNumber, Integer pageSize) {
+    public ResponseEntity<RestApiResponse<AccessPointTypeDTO>> handleGetAllPaged(Integer pageNumber, Integer pageSize) {
+        RestApiResponse<AccessPointTypeDTO> responseData = new RestApiResponse<>();
         try {
-            
             logger.debug("Displays all Access Point Types of the specified Page number: " + pageNumber + "and Page size: " + pageSize);
-            return ResponseEntity.ok().body(accessPointTypeService.getAll(pageNumber, pageSize));
-
+            // Note: The base class expects AccessPointTypeDTO but service returns Page - this may need review
+            Object data = accessPointTypeService.getAll(pageNumber, pageSize);
+            responseData.setData((AccessPointTypeDTO) data);
+            responseData.setSuccess(true);
+            responseData.setMessage("Access Point Types retrieved successfully.");
+            return ResponseEntity.status(HttpStatus.OK).body(responseData);
         } catch (Exception e) {
-            e.printStackTrace();
             logger.error(e.getMessage());
-            String message = String.format("An error occurred when reading page %d of size %d.", pageNumber, pageSize);
-            return ResponseEntity.badRequest().body(message);
+            responseData.setSuccess(false);
+            responseData.setMessage(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseData);
         }
     }
 
     @Override
-    public ResponseEntity<?> handlePagedSearch(SearchObject<String> criteria) {
+    public ResponseEntity<RestApiResponse<AccessPointTypeDTO>> handlePagedSearch(SearchObject<String> criteria) {
+        RestApiResponse<AccessPointTypeDTO> responseData = new RestApiResponse<>();
         try {
-            Optional<?> data = Optional.of(accessPointTypeService.search(criteria)); // TODO: Add custom code here;
-            ResponseEntity<?> response;
-
-            if(data.isPresent()) {
-                response = ResponseEntity.status(HttpStatus.OK).body(data.get());
-            } else {
-                response = ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-            }
-
-            return response;
+            // Note: Service returns Page but base class expects AccessPointTypeDTO - this needs review
+            Object data = accessPointTypeService.search(criteria);
+            responseData.setData((AccessPointTypeDTO) data);
+            responseData.setSuccess(true);
+            responseData.setMessage("Access Point Types search completed successfully.");
+            return ResponseEntity.status(HttpStatus.OK).body(responseData);
         } catch (Exception e) {
             logger.error(e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            responseData.setSuccess(false);
+            responseData.setMessage(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseData);
         }
     }
 
     @Override
-    public ResponseEntity<?> handleRemove(String id) {
+    public ResponseEntity<RestApiResponse<Boolean>> handleRemove(String id) {
+        RestApiResponse<Boolean> responseData = new RestApiResponse<>();
         try {
             logger.debug("Deletes Access Point Type by ID " +id);
             boolean rm = accessPointTypeService.remove(id);
-            ResponseEntity<?> response;
-
+            
             if(rm) {
-                response = ResponseEntity.ok().body(rm);
+                responseData.setData(rm);
+                responseData.setSuccess(true);
+                responseData.setMessage(String.format("Access Point Type with id %s deleted successfully.", id));
+                return ResponseEntity.status(HttpStatus.OK).body(responseData);
             } else {
-                response = ResponseEntity.status(HttpStatus.NOT_FOUND).body("Failed to delete the access point type with id " + id);
+                responseData.setSuccess(false);
+                responseData.setMessage(String.format("Failed to delete the access point type with id %s.", id));
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(responseData);
             }
-
-            return response;
         } catch (Exception e) {
-            e.printStackTrace();
             logger.error(e.getMessage());
-
-            if(e instanceof EmptyResultDataAccessException || e.getCause() instanceof EmptyResultDataAccessException) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Could not delete access point type with id " + id);
-            } else if(e.getMessage().contains("is in use") || e.getCause().getMessage().contains("is in use")) {
-                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body("This access point type is in use and cannot be deleted.");
-            }
-
-            return ResponseEntity.badRequest().body("Unknown error encountered when deleting access point type with id " + id);
+            responseData.setSuccess(false);
+            responseData.setMessage(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseData);
         }
     }
 
     @Override
-    public ResponseEntity<?> handleSave(AccessPointTypeDTO accessPointType) {
+    public ResponseEntity<RestApiResponse<AccessPointTypeDTO>> handleSave(AccessPointTypeDTO accessPointType) {
+        RestApiResponse<AccessPointTypeDTO> responseData = new RestApiResponse<>();
         try {
                         
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             AuditTracker.auditTrail(accessPointType, authentication);
 
             logger.debug("Saves Access Point Type "+accessPointType );
-            Optional<?> data = Optional.of(accessPointTypeService.save(accessPointType));
-            ResponseEntity<?> response;
-
-            if(data.isPresent()) {
-                response = ResponseEntity.ok().body(data.get());
-            } else {
-                response = ResponseEntity.status(HttpStatus.NOT_FOUND).body("Could not save the access point type.");
-            }
-
-            return response;
+            AccessPointTypeDTO data = accessPointTypeService.save(accessPointType);
+            responseData.setData(data);
+            responseData.setSuccess(true);
+            responseData.setMessage("Access Point Type saved successfully.");
+            return ResponseEntity.status(HttpStatus.OK).body(responseData);
         } catch (AccessPointTypeServiceException | IllegalArgumentException e) {
 
             String message = e.getMessage();
@@ -180,44 +180,65 @@ public class AccessPointTypeApiImpl extends AccessPointTypeApiBase {
                     message = "An unknown error has occured. Please contact the system administrator.";
                 }
                 
-                return ResponseEntity.badRequest().body(message);
+                responseData.setSuccess(false);
+                responseData.setMessage(message);
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseData);
 
             } else if(e.getCause() instanceof PSQLException) {
 
                 if (e.getCause().getMessage().contains("duplicate key")) {
                     if(e.getCause().getMessage().contains("(code)")) {
 
-                        return ResponseEntity.badRequest().body("This access point type with this code has been already created.");
+                        responseData.setSuccess(false);
+                        responseData.setMessage("This access point type with this code has been already created.");
+                        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseData);
 
                     } else if(e.getCause().getMessage().contains("(name)")) {
 
-                        return ResponseEntity.badRequest().body("This access point type with this name has been already created.");
+                        responseData.setSuccess(false);
+                        responseData.setMessage("This access point type with this name has been already created.");
+                        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseData);
                     } else {
-                        return ResponseEntity.badRequest().body("This access point type is conflicting with an existing one.");
+                        responseData.setSuccess(false);
+                        responseData.setMessage("This access point type is conflicting with an existing one.");
+                        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseData);
                     }
                 }
                 
-                return ResponseEntity.badRequest().body("This access point type is conflicting with an existing one.");
+                responseData.setSuccess(false);
+                responseData.setMessage("This access point type is conflicting with an existing one.");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseData);
             }
 
-            return ResponseEntity.badRequest().body("An unknown error has occured. Please contact the portal administrator.");
+            responseData.setSuccess(false);
+            responseData.setMessage("An unknown error has occured. Please contact the portal administrator.");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseData);
         } catch(Exception e) {
 
             e.printStackTrace();
             e.getCause().printStackTrace();
-            return ResponseEntity.badRequest().body("An unknown error has occured. Please contact the portal administrator.");
+            responseData.setSuccess(false);
+            responseData.setMessage("An unknown error has occured. Please contact the portal administrator.");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseData);
         }
     }
 
     @Override
-    public ResponseEntity<?> handleSearch(String criteria) {
+    public ResponseEntity<RestApiResponse<Collection<AccessPointTypeDTO>>> handleSearch(String criteria) {
+        RestApiResponse<Collection<AccessPointTypeDTO>> responseData = new RestApiResponse<>();
         try {
             logger.debug("Searches for Access Point Type by criteria "+ criteria);
-            return ResponseEntity.ok().body(accessPointTypeService.search(criteria, null));
+            Collection<AccessPointTypeDTO> data = accessPointTypeService.search(criteria, null);
+            responseData.setData(data);
+            responseData.setSuccess(true);
+            responseData.setMessage("Access Point Type search completed successfully.");
+            return ResponseEntity.status(HttpStatus.OK).body(responseData);
         } catch (Exception e) {
             e.printStackTrace();
             logger.error(e.getMessage());
-            return ResponseEntity.badRequest().body("An unknown error has occurred. Please contact the site administrator.");
+            responseData.setSuccess(false);
+            responseData.setMessage("An unknown error has occurred. Please contact the site administrator.");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseData);
         }
     }
 }

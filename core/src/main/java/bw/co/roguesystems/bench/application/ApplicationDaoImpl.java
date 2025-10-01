@@ -64,7 +64,9 @@ public class ApplicationDaoImpl
         }
         else
         {
-            return this.load(applicationDTO.getId());
+            return this.applicationRepository.findById(applicationDTO.getId())
+                .orElseThrow(() -> new IllegalArgumentException(
+                    "Application with id '" + applicationDTO.getId() + "' does not exist."));
         }
     }
 

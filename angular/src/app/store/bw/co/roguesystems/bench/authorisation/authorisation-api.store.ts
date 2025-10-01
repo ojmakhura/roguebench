@@ -11,22 +11,22 @@ import { AuthorisationDTO } from '@app/model/bw/co/roguesystems/bench/authorisat
 import { AuthorisationListDTO } from '@app/model/bw/co/roguesystems/bench/authorisation/authorisation-list-dto';
 import { AuthorisationCriteria } from '@app/model/bw/co/roguesystems/bench/authorisation/authorisation-criteria';
 import { AuthorisationApi } from '@app/service/bw/co/roguesystems/bench/authorisation/authorisation-api';
+import { RestApiResponse } from '@app/model/rest-api-response.model';
 
-export type AuthorisationApiState = AppState<any, any> & {
-  authorisedApplications: AuthorisationDTO[];
-};
+export type AuthorisationApiState = AppState<any, any> & {};
 
 const initialState: AuthorisationApiState = {
   data: null,
   dataList: [],
   dataPage: new Page<any>(),
   searchCriteria: new SearchObject<any>(),
-  error: null,
+  status: 0,
   loading: false,
   success: false,
   messages: [],
   loaderMessage: '',
-  authorisedApplications: []
+  details: '',
+  error: false
 };
 
 export const AuthorisationApiStore = signalStore(
@@ -43,25 +43,27 @@ export const AuthorisationApiStore = signalStore(
           patchState(store, { loading: true, loaderMessage: 'Loading ...' });
           return authorisationApi.findApplicationAuthorisationPaged(data.applicationId, data.pageNumber, data.pageSize, ).pipe(
             tapResponse({
-              next: (dataPage: Page<AuthorisationListDTO> | any) => {
+              next: (response: RestApiResponse<Page<AuthorisationListDTO> | any>) => {
                 patchState(
-                  store,
+                  store, 
                   {
-                    dataPage,
-                     loading: false,
-                     error: false,
-                     success: true,
-                     messages: [`Found ${dataPage.numberOfElements} of ${dataPage.totalElements} in page ${dataPage.number} of ${dataPage.totalPages}`,]
+                    dataPage: response?.data,
+                    loading: false, 
+                    status: (response?.status) ,
+                    success: (response?.success || false), 
+                    messages: [response.message || 'Success!!'],
+                    error: false,
                   }
                 );
               },
               error: (error: any) => {
                 patchState(
-                  store, {
-                    error,
-                    loading: false,
+                  store, { 
+                    status: (error?.status || 0), 
+                    loading: false, 
                     success: false,
-                    messages: [error?.error ? error.error : error]
+                    error: true,
+                    messages: [error.error.message || 'An error occurred'], 
                   }
                 );
               },
@@ -74,25 +76,60 @@ export const AuthorisationApiStore = signalStore(
           patchState(store, { loading: true, loaderMessage: 'Loading ...' });
           return authorisationApi.findApplicationAuthorisations(data.applicationId, ).pipe(
             tapResponse({
-              next: (dataList: AuthorisationListDTO[] | any[]) => {
+              next: (response: RestApiResponse<AuthorisationListDTO[] | any[]>) => {
                 patchState(
-                  store,
+                  store, 
                   {
-                     authorisedApplications: dataList,
-                     loading: false,
-                     error: false,
-                     success: true,
-                     messages: [`Found ${data.length} authorisations.`]
+                    dataList: response?.data, 
+                    loading: false, 
+                    status: (response?.status) ,
+                    success: (response?.success || false), 
+                    messages: [response.message || 'Success!!'],
+                    error: false,
                   }
                 );
               },
               error: (error: any) => {
                 patchState(
-                  store, {
-                    error,
-                    loading: false,
+                  store, { 
+                    status: (error?.status || 0), 
+                    loading: false, 
                     success: false,
-                    messages: [error?.error ? error.error : error]
+                    error: true,
+                    messages: [error.error.message || 'An error occurred'], 
+                  }
+                );
+              },
+            }),
+          );
+        }),
+      ),
+      findAuthorisedApplications: rxMethod<{roles: Set<string> | any }>(
+        switchMap((data: any) => {
+          patchState(store, { loading: true, loaderMessage: 'Loading ...' });
+          return authorisationApi.findAuthorisedApplications(data.roles, ).pipe(
+            tapResponse({
+              next: (response: RestApiResponse<AuthorisationListDTO[] | any[]>) => {
+                patchState(
+                  store, 
+                  {
+                    dataList: response?.data, 
+                    loading: false, 
+                    status: (response?.status) ,
+                    success: (response?.success || false), 
+                    messages: [response.message || 'Success!!'],
+                    error: false,
+                  }
+                );
+              },
+              error: (error: any) => {
+                patchState(
+                  store, { 
+                    status: (error?.status || 0), 
+                    loading: false, 
+                    success: false,
+                    error: true,
+                    messages: [error.error.message || 'An error occurred'], 
                   }
                 );
               },
@@ -105,87 +142,27 @@ export const AuthorisationApiStore = signalStore(
           patchState(store, { loading: true, loaderMessage: 'Loading ...' });
           return authorisationApi.findAuthorisedApplicationsPaged(data.roles, data.pageNumber, data.pageSize, ).pipe(
             tapResponse({
-              next: (dataPage: Page<AuthorisationListDTO> | any) => {
+              next: (response: RestApiResponse<Page<AuthorisationListDTO> | any>) => {
                 patchState(
-                  store,
+                  store, 
                   {
-                    dataPage,
-                     loading: false,
-                     error: false,
-                     success: true,
-                     messages: [`Found ${dataPage.numberOfElements} of ${dataPage.totalElements} in page ${dataPage.number} of ${dataPage.totalPages}`,]
+                    dataPage: response?.data,
+                    loading: false, 
+                    status: (response?.status) ,
+                    success: (response?.success || false), 
+                    messages: [response.message || 'Success!!'],
+                    error: false,
                   }
                 );
               },
               error: (error: any) => {
                 patchState(
-                  store, {
-                    error,
-                    loading: false,
+                  store, { 
+                    status: (error?.status || 0), 
+                    loading: false, 
                     success: false,
-                    messages: [error?.error ? error.error : error]
-                  }
-                );
-              },
-            }),
-          );
-        }),
-      ),
-      findAuthorisedApplications: rxMethod<{roles: Set<string> | any }>(
-        switchMap((data: any) => {
-          patchState(store, { loading: true, loaderMessage: 'Loading ...' });
-          return authorisationApi.findAuthorisedApplications(data.roles).pipe(
-            tapResponse({
-              next: (dataList: AuthorisationListDTO[] | any[]) => {
-                patchState(
-                  store,
-                  {
-                     authorisedApplications: dataList,
-                     loading: false,
-                     error: false,
-                     success: true,
-                     messages: [`Found ${data.length} authorisations.`]
-                  }
-                );
-              },
-              error: (error: any) => {
-                patchState(
-                  store, {
-                    error,
-                    loading: false,
-                    success: false,
-                    messages: [error?.error ? error.error : error]
-                  }
-                );
-              },
-            }),
-          );
-        }),
-      ),
-      findMyAuthorisedApplications: rxMethod<{application: string | any }>(
-        switchMap((data: any) => {
-          patchState(store, { loading: true, loaderMessage: 'Loading ...' });
-          return authorisationApi.findMyAuthorisedApplications(data.application).pipe(
-            tapResponse({
-              next: (dataList: AuthorisationListDTO[] | any[]) => {
-                patchState(
-                  store,
-                  {
-                     dataList,
-                     loading: false,
-                     error: false,
-                     success: true,
-                     messages: [`Found ${data.length} authorisations.`]
-                  }
-                );
-              },
-              error: (error: any) => {
-                patchState(
-                  store, {
-                    error,
-                    loading: false,
-                    success: false,
-                    messages: [error?.error ? error.error : error]
+                    error: true,
+                    messages: [error.error.message || 'An error occurred'], 
                   }
                 );
               },
@@ -198,22 +175,27 @@ export const AuthorisationApiStore = signalStore(
           patchState(store, { loading: true, loaderMessage: 'Loading ...' });
           return authorisationApi.findById(data.id, ).pipe(
             tapResponse({
-              next: (data: AuthorisationDTO | any) => {
-                patchState(store, {
-                  data,
-                  loading: false,
-                  error: false,
-                  success: true,
-                  messages: [`Authorisation found.`],
-                });
+              next: (response: RestApiResponse<AuthorisationDTO | any>) => {
+                patchState(
+                  store, 
+                  {
+                    data: response?.data,
+                    loading: false, 
+                    status: (response?.status) ,
+                    success: (response?.success || false), 
+                    messages: [response.message || 'Success!!'],
+                    error: false,
+                  }
+                );
               },
               error: (error: any) => {
                 patchState(
-                  store, {
-                    error,
-                    loading: false,
+                  store, { 
+                    status: (error?.status || 0), 
+                    loading: false, 
                     success: false,
-                    messages: [error?.error ? error.error : error]
+                    error: true,
+                    messages: [error.error.message || 'An error occurred'], 
                   }
                 );
               },
@@ -221,27 +203,65 @@ export const AuthorisationApiStore = signalStore(
           );
         }),
       ),
-      findByRolesAndUrl: rxMethod<{applicationId: string | any , url: string | any , roles: Array<string> | any }>(
+      findByParentAndRoles: rxMethod<{parentId: string | any , roles: Set<string> | any }>(
+        switchMap((data: any) => {
+          patchState(store, { loading: true, loaderMessage: 'Loading ...' });
+          return authorisationApi.findByParentAndRoles(data.parentId, data.roles, ).pipe(
+            tapResponse({
+              next: (response: RestApiResponse<AuthorisationListDTO[] | any[]>) => {
+                patchState(
+                  store, 
+                  {
+                    dataList: response?.data, 
+                    loading: false, 
+                    status: (response?.status) ,
+                    success: (response?.success || false), 
+                    messages: [response.message || 'Success!!'],
+                    error: false,
+                  }
+                );
+              },
+              error: (error: any) => {
+                patchState(
+                  store, { 
+                    status: (error?.status || 0), 
+                    loading: false, 
+                    success: false,
+                    error: true,
+                    messages: [error.error.message || 'An error occurred'], 
+                  }
+                );
+              },
+            }),
+          );
+        }),
+      ),
+      findByRolesAndUrl: rxMethod<{applicationId: string | any , url: string | any , roles: Set<string> | any }>(
         switchMap((data: any) => {
           patchState(store, { loading: true, loaderMessage: 'Loading ...' });
           return authorisationApi.findByRolesAndUrl(data.applicationId, data.url, data.roles, ).pipe(
             tapResponse({
-              next: (dataList: AuthorisationDTO[] | any[]) => {
-                patchState(store, {
-                  dataList,
-                  loading: false,
-                  error: false,
-                  success: true,
-                  messages: [`Found ${data.length} authorisations.`],
-                });
+              next: (response: RestApiResponse<AuthorisationListDTO[] | any[]>) => {
+                patchState(
+                  store, 
+                  {
+                    dataList: response?.data, 
+                    loading: false, 
+                    status: (response?.status) ,
+                    success: (response?.success || false), 
+                    messages: [response.message || 'Success!!'],
+                    error: false,
+                  }
+                );
               },
               error: (error: any) => {
                 patchState(
-                  store, {
-                    error,
-                    loading: false,
+                  store, { 
+                    status: (error?.status || 0), 
+                    loading: false, 
                     success: false,
-                    messages: [error?.error ? error.error : error]
+                    error: true,
+                    messages: [error.error.message || 'An error occurred'], 
                   }
                 );
               },
@@ -249,29 +269,32 @@ export const AuthorisationApiStore = signalStore(
           );
         }),
       ),
-      findByRolesAndUrlPaged: rxMethod<{applicationId: string | any , url: string | any , roles: Array<string> | any , pageNumber: number | any , pageSize: number | any }>(
+      findByRolesAndUrlPaged: rxMethod<{applicationId: string | any , url: string | any , roles: Set<string> | any , pageNumber: number | any , pageSize: number | any }>(
         switchMap((data: any) => {
           patchState(store, { loading: true, loaderMessage: 'Loading ...' });
           return authorisationApi.findByRolesAndUrlPaged(data.applicationId, data.url, data.roles, data.pageNumber, data.pageSize, ).pipe(
             tapResponse({
-              next: (dataPage: AuthorisationDTO | any) => {
-                patchState(store, {
-                  dataPage,
-                  loading: false,
-                  error: false,
-                  success: true,
-                  messages: [
-                    `Found ${dataPage.numberOfElements} of ${dataPage.totalElements} in page ${dataPage.number} of ${dataPage.totalPages}`,
-                  ],
-                });
+              next: (response: RestApiResponse<Page<AuthorisationListDTO> | any>) => {
+                patchState(
+                  store, 
+                  {
+                    dataPage: response?.data,
+                    loading: false, 
+                    status: (response?.status) ,
+                    success: (response?.success || false), 
+                    messages: [response.message || 'Success!!'],
+                    error: false,
+                  }
+                );
               },
               error: (error: any) => {
                 patchState(
-                  store, {
-                    error,
-                    loading: false,
+                  store, { 
+                    status: (error?.status || 0), 
+                    loading: false, 
                     success: false,
-                    messages: [error?.error ? error.error : error]
+                    error: true,
+                    messages: [error.error.message || 'An error occurred'], 
                   }
                 );
               },
@@ -279,27 +302,65 @@ export const AuthorisationApiStore = signalStore(
           );
         }),
       ),
-      findRestrictedViewItems: rxMethod<{applicationId: string | any , url: string | any , roles: Array<string> | any }>(
+      findMyAuthorisedApplications: rxMethod<{application: string | any }>(
+        switchMap((data: any) => {
+          patchState(store, { loading: true, loaderMessage: 'Loading ...' });
+          return authorisationApi.findMyAuthorisedApplications(data.application, ).pipe(
+            tapResponse({
+              next: (response: RestApiResponse<AuthorisationListDTO[] | any[]>) => {
+                patchState(
+                  store, 
+                  {
+                    dataList: response?.data, 
+                    loading: false, 
+                    status: (response?.status) ,
+                    success: (response?.success || false), 
+                    messages: [response.message || 'Success!!'],
+                    error: false,
+                  }
+                );
+              },
+              error: (error: any) => {
+                patchState(
+                  store, { 
+                    status: (error?.status || 0), 
+                    loading: false, 
+                    success: false,
+                    error: true,
+                    messages: [error.error.message || 'An error occurred'], 
+                  }
+                );
+              },
+            }),
+          );
+        }),
+      ),
+      findRestrictedViewItems: rxMethod<{applicationId: string | any , url: string | any , roles: Set<string> | any }>(
         switchMap((data: any) => {
           patchState(store, { loading: true, loaderMessage: 'Loading ...' });
           return authorisationApi.findRestrictedViewItems(data.applicationId, data.url, data.roles, ).pipe(
             tapResponse({
-              next: (dataList: AuthorisationDTO[] | any[]) => {
-                patchState(store, {
-                  dataList,
-                  loading: false,
-                  error: false,
-                  // success: true,
-                  // messages: [`Found ${data.length} authorisations.`],
-                });
+              next: (response: RestApiResponse<AuthorisationListDTO[] | any[]>) => {
+                patchState(
+                  store, 
+                  {
+                    dataList: response?.data, 
+                    loading: false, 
+                    status: (response?.status) ,
+                    success: (response?.success || false), 
+                    messages: [response.message || 'Success!!'],
+                    error: false,
+                  }
+                );
               },
               error: (error: any) => {
                 patchState(
-                  store, {
-                    error,
-                    loading: false,
+                  store, { 
+                    status: (error?.status || 0), 
+                    loading: false, 
                     success: false,
-                    messages: [error?.error ? error.error : error]
+                    error: true,
+                    messages: [error.error.message || 'An error occurred'], 
                   }
                 );
               },
@@ -307,27 +368,32 @@ export const AuthorisationApiStore = signalStore(
           );
         }),
       ),
-      getAccessTypeCodeAuthorisations: rxMethod<{applicationId: string | any , roles: Array<string> | any , accessPointTypeCodes: Array<string> | any }>(
+      getAccessTypeCodeAuthorisations: rxMethod<{applicationId: string | any , roles: Set<string> | any , accessPointTypeCodes: Set<string> | any }>(
         switchMap((data: any) => {
           patchState(store, { loading: true, loaderMessage: 'Loading ...' });
           return authorisationApi.getAccessTypeCodeAuthorisations(data.applicationId, data.roles, data.accessPointTypeCodes, ).pipe(
             tapResponse({
-              next: (dataList: AuthorisationDTO[] | any[]) => {
-                patchState(store, {
-                  dataList,
-                  loading: false,
-                  error: false,
-                  success: true,
-                  messages: [`Found ${data.length} authorisations.`],
-                });
+              next: (response: RestApiResponse<AuthorisationListDTO[] | any[]>) => {
+                patchState(
+                  store, 
+                  {
+                    dataList: response?.data, 
+                    loading: false, 
+                    status: (response?.status) ,
+                    success: (response?.success || false), 
+                    messages: [response.message || 'Success!!'],
+                    error: false,
+                  }
+                );
               },
               error: (error: any) => {
                 patchState(
-                  store, {
-                    error,
-                    loading: false,
+                  store, { 
+                    status: (error?.status || 0), 
+                    loading: false, 
                     success: false,
-                    messages: [error?.error ? error.error : error]
+                    error: true,
+                    messages: [error.error.message || 'An error occurred'], 
                   }
                 );
               },
@@ -335,29 +401,32 @@ export const AuthorisationApiStore = signalStore(
           );
         }),
       ),
-      getAccessTypeCodeAuthorisationsPaged: rxMethod<{applicationId: string | any , roles: Array<string> | any , accessPointTypeCodes: Array<string> | any , pageNumber: number | any , pageSize: number | any }>(
+      getAccessTypeCodeAuthorisationsPaged: rxMethod<{applicationId: string | any , roles: Set<string> | any , accessPointTypeCodes: Set<string> | any , pageNumber: number | any , pageSize: number | any }>(
         switchMap((data: any) => {
           patchState(store, { loading: true, loaderMessage: 'Loading ...' });
           return authorisationApi.getAccessTypeCodeAuthorisationsPaged(data.applicationId, data.roles, data.accessPointTypeCodes, data.pageNumber, data.pageSize, ).pipe(
             tapResponse({
-              next: (dataPage: Page<AuthorisationDTO> | any) => {
-                patchState(store, {
-                  dataPage,
-                  loading: false,
-                  error: false,
-                  success: true,
-                  messages: [
-                    `Found ${dataPage.numberOfElements} of ${dataPage.totalElements} in page ${dataPage.number} of ${dataPage.totalPages}`,
-                  ],
-                });
+              next: (response: RestApiResponse<Page<AuthorisationListDTO> | any>) => {
+                patchState(
+                  store, 
+                  {
+                    dataPage: response?.data,
+                    loading: false, 
+                    status: (response?.status) ,
+                    success: (response?.success || false), 
+                    messages: [response.message || 'Success!!'],
+                    error: false,
+                  }
+                );
               },
               error: (error: any) => {
                 patchState(
-                  store, {
-                    error,
-                    loading: false,
+                  store, { 
+                    status: (error?.status || 0), 
+                    loading: false, 
                     success: false,
-                    messages: [error?.error ? error.error : error]
+                    error: true,
+                    messages: [error.error.message || 'An error occurred'], 
                   }
                 );
               },
@@ -370,22 +439,27 @@ export const AuthorisationApiStore = signalStore(
           patchState(store, { loading: true, loaderMessage: 'Loading ...' });
           return authorisationApi.getAll().pipe(
             tapResponse({
-              next: (dataList: AuthorisationDTO[] | any[]) => {
-                patchState(store, {
-                  dataList,
-                  loading: false,
-                  error: false,
-                  success: true,
-                  messages: [`Found ${dataList.length} authorisations.`],
-                });
+              next: (response: RestApiResponse<AuthorisationListDTO[] | any[]>) => {
+                patchState(
+                  store, 
+                  {
+                    dataList: response?.data, 
+                    loading: false, 
+                    status: (response?.status) ,
+                    success: (response?.success || false), 
+                    messages: [response.message || 'Success!!'],
+                    error: false,
+                  }
+                );
               },
               error: (error: any) => {
                 patchState(
-                  store, {
-                    error,
-                    loading: false,
+                  store, { 
+                    status: (error?.status || 0), 
+                    loading: false, 
                     success: false,
-                    messages: [error?.error ? error.error : error]
+                    error: true,
+                    messages: [error.error.message || 'An error occurred'], 
                   }
                 );
               },
@@ -398,24 +472,27 @@ export const AuthorisationApiStore = signalStore(
           patchState(store, { loading: true, loaderMessage: 'Loading ...' });
           return authorisationApi.getAllPaged(data.pageNumber, data.pageSize, ).pipe(
             tapResponse({
-              next: (dataPage: Page<AuthorisationDTO> | any) => {
-                patchState(store, {
-                  dataPage,
-                  loading: false,
-                  error: false,
-                  success: true,
-                  messages: [
-                    `Found ${dataPage.numberOfElements} of ${dataPage.totalElements} in page ${dataPage.number + 1} of ${dataPage.totalPages}`,
-                  ],
-                });
+              next: (response: RestApiResponse<Page<AuthorisationListDTO> | any>) => {
+                patchState(
+                  store, 
+                  {
+                    dataPage: response?.data,
+                    loading: false, 
+                    status: (response?.status) ,
+                    success: (response?.success || false), 
+                    messages: [response.message || 'Success!!'],
+                    error: false,
+                  }
+                );
               },
               error: (error: any) => {
                 patchState(
-                  store, {
-                    error,
-                    loading: false,
+                  store, { 
+                    status: (error?.status || 0), 
+                    loading: false, 
                     success: false,
-                    messages: [error?.error ? error.error : error]
+                    error: true,
+                    messages: [error.error.message || 'An error occurred'], 
                   }
                 );
               },
@@ -428,24 +505,27 @@ export const AuthorisationApiStore = signalStore(
           patchState(store, { loading: true, loaderMessage: 'Loading ...' });
           return authorisationApi.remove(data.id, ).pipe(
             tapResponse({
-              next: (data: boolean | any) => {
-                patchState(store, {
-                  data: new AuthorisationDTO(),
-                  dataList: [],
-                  dataPage: new Page<any>(),
-                  loading: false,
-                  error: false,
-                  success: true,
-                  messages: [`Authorisation removed.`],
-                });
+              next: (response: RestApiResponse<boolean | any>) => {
+                patchState(
+                  store, 
+                  {
+                    data: response?.data,
+                    loading: false, 
+                    status: (response?.status) ,
+                    success: (response?.success || false), 
+                    messages: [response.message || 'Success!!'],
+                    error: false,
+                  }
+                );
               },
               error: (error: any) => {
                 patchState(
-                  store, {
-                    error,
-                    loading: false,
+                  store, { 
+                    status: (error?.status || 0), 
+                    loading: false, 
                     success: false,
-                    messages: [error?.error ? error.error : error]
+                    error: true,
+                    messages: [error.error.message || 'An error occurred'], 
                   }
                 );
               },
@@ -458,22 +538,27 @@ export const AuthorisationApiStore = signalStore(
           patchState(store, { loading: true, loaderMessage: 'Loading ...' });
           return authorisationApi.save(data.authorisation, ).pipe(
             tapResponse({
-              next: (data: AuthorisationDTO | any) => {
-                patchState(store, {
-                  data,
-                  loading: false,
-                  error: false,
-                  success: true,
-                  messages: [`Authorisation saved.`],
-                });
+              next: (response: RestApiResponse<AuthorisationDTO | any>) => {
+                patchState(
+                  store, 
+                  {
+                    data: response?.data,
+                    loading: false, 
+                    status: (response?.status) ,
+                    success: (response?.success || false), 
+                    messages: [response.message || 'Success!!'],
+                    error: false,
+                  }
+                );
               },
               error: (error: any) => {
                 patchState(
-                  store, {
-                    error,
-                    loading: false,
+                  store, { 
+                    status: (error?.status || 0), 
+                    loading: false, 
                     success: false,
-                    messages: [error?.error ? error.error : error]
+                    error: true,
+                    messages: [error.error.message || 'An error occurred'], 
                   }
                 );
               },
@@ -486,22 +571,27 @@ export const AuthorisationApiStore = signalStore(
           patchState(store, { loading: true, loaderMessage: 'Loading ...' });
           return authorisationApi.search(data.criteria, ).pipe(
             tapResponse({
-              next: (dataList: AuthorisationDTO[] | any[]) => {
-                patchState(store, {
-                  dataList,
-                  loading: false,
-                  error: false,
-                  success: true,
-                  messages: [`Found ${dataList.length} authorisations.`],
-                });
+              next: (response: RestApiResponse<AuthorisationListDTO[] | any[]>) => {
+                patchState(
+                  store, 
+                  {
+                    dataList: response?.data, 
+                    loading: false, 
+                    status: (response?.status) ,
+                    success: (response?.success || false), 
+                    messages: [response.message || 'Success!!'],
+                    error: false,
+                  }
+                );
               },
               error: (error: any) => {
                 patchState(
-                  store, {
-                    error,
-                    loading: false,
+                  store, { 
+                    status: (error?.status || 0), 
+                    loading: false, 
                     success: false,
-                    messages: [error?.error ? error.error : error]
+                    error: true,
+                    messages: [error.error.message || 'An error occurred'], 
                   }
                 );
               },
@@ -514,27 +604,27 @@ export const AuthorisationApiStore = signalStore(
           patchState(store, { loading: true, loaderMessage: 'Loading ...' });
           return authorisationApi.searchPaged(data.criteria, ).pipe(
             tapResponse({
-              next: (dataPage: Page<AuthorisationListDTO> | any) => {
+              next: (response: RestApiResponse<Page<AuthorisationListDTO>[] | any[]>) => {
                 patchState(
-                  store,
+                  store, 
                   {
-                     dataPage,
-                     loading: false,
-                     error: false,
-                     success: true,
-                     messages: [
-                      `Found ${dataPage.numberOfElements} of ${dataPage.totalElements} in page ${dataPage.number + 1} of ${dataPage.totalPages}`,
-                     ]
+                    dataList: response?.data, 
+                    loading: false, 
+                    status: (response?.status) ,
+                    success: (response?.success || false), 
+                    messages: [response.message || 'Success!!'],
+                    error: false,
                   }
                 );
               },
               error: (error: any) => {
                 patchState(
-                  store, {
-                    error,
-                    loading: false,
+                  store, { 
+                    status: (error?.status || 0), 
+                    loading: false, 
                     success: false,
-                    messages: [error?.error ? error.error : error]
+                    error: true,
+                    messages: [error.error.message || 'An error occurred'], 
                   }
                 );
               },

@@ -78,7 +78,10 @@ public class AccessPointTypeDaoImpl
         if (accessPointTypeDTO.getId() == null) {
             return AccessPointType.Factory.newInstance();
         } else {
-            return this.load(accessPointTypeDTO.getId());
+            return accessPointTypeRepository
+                .findById(accessPointTypeDTO.getId())
+                .orElseThrow(() -> new IllegalArgumentException(
+                    "AccessPointType with id " + accessPointTypeDTO.getId() + " not found"));
         }
     }
 

@@ -6,6 +6,7 @@
 package bw.co.roguesystems.bench.authorisation;
 
 import bw.co.roguesystems.bench.AuditTracker;
+import bw.co.roguesystems.bench.RestApiResponse;
 import bw.co.roguesystems.bench.SearchObject;
 import bw.co.roguesystems.bench.keycloak.KeycloakService;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -14,11 +15,13 @@ import jakarta.persistence.EntityNotFoundException;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.Collection;
 
 import org.apache.commons.lang3.StringUtils;
 import org.keycloak.adapters.jaas.AbstractKeycloakLoginModule.Auth;
 import org.postgresql.util.PSQLException;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -43,76 +46,82 @@ public class AuthorisationApiImpl extends AuthorisationApiBase {
     }
 
     @Override
-    public ResponseEntity<?> handleFindById(String id) {
+    public ResponseEntity<RestApiResponse<AuthorisationDTO>> handleFindById(String id) {
+        RestApiResponse<AuthorisationDTO> responseData = new RestApiResponse<>();
         try {
             logger.debug("Searches for Authorisation by Id " + id);
-            Optional<AuthorisationDTO> data = Optional.of(this.authorisationService.findById(id)); // TODO: Add custom
-                                                                                                   // code here;
-            ResponseEntity<?> response;
-
-            if (data.isPresent()) {
-                response = ResponseEntity.ok().body(data.get());
+            AuthorisationDTO data = this.authorisationService.findById(id);
+            
+            if (data != null) {
+                responseData.setData(data);
+                responseData.setSuccess(true);
+                responseData.setMessage("Authorisation found successfully.");
+                return ResponseEntity.status(HttpStatus.OK).body(responseData);
             } else {
-                response = ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(String.format("Authorisation with id %d not found.", id));
+                responseData.setSuccess(false);
+                responseData.setMessage(String.format("Authorisation with id %s not found.", id));
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(responseData);
             }
-
-            return response;
-
         } catch (Exception e) {
             e.printStackTrace();
             String message = e.getMessage();
             if (e instanceof NoSuchElementException || e.getCause() instanceof NoSuchElementException
                     || e instanceof EntityNotFoundException || e.getCause() instanceof EntityNotFoundException) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(String.format("Authorisation with id %s not found.", id));
+                responseData.setSuccess(false);
+                responseData.setMessage(String.format("Authorisation with id %s not found.", id));
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(responseData);
             } else {
                 message = "Unknown error encountered. Please contact administrator.";
             }
 
             logger.error(message);
-            return ResponseEntity.badRequest().body(message);
+            responseData.setSuccess(false);
+            responseData.setMessage(message);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseData);
         }
     }
 
     @Override
-    public ResponseEntity<?> handleFindByRolesAndUrl(String applicationId, String url, Set<String> roles) {
+    public ResponseEntity<RestApiResponse<Collection<AuthorisationListDTO>>> handleFindByRolesAndUrl(String applicationId, String url, Set<String> roles) {
+        RestApiResponse<Collection<AuthorisationListDTO>> responseData = new RestApiResponse<>();
         try {
             logger.debug("Searches for an Authorisation by " + "Url: " + url + " and Roles: " + roles);
-            return ResponseEntity.ok().body(authorisationService.findByRolesAndUrl(applicationId, url, roles));
-
+            Collection<AuthorisationListDTO> data = authorisationService.findByRolesAndUrl(applicationId, url, roles);
+            responseData.setData(data);
+            responseData.setSuccess(true);
+            responseData.setMessage("Authorisations found successfully.");
+            return ResponseEntity.status(HttpStatus.OK).body(responseData);
         } catch (Exception e) {
             e.printStackTrace();
             logger.error(e.getMessage());
-            return ResponseEntity.status(HttpStatus.NO_CONTENT)
-                    .body("Unknown error encountered. Please contact administrator.");
+            responseData.setSuccess(false);
+            responseData.setMessage("Unknown error encountered. Please contact administrator.");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseData);
         }
     }
 
     @Override
-    public ResponseEntity<?> handleFindByRolesAndUrlPaged(String applicationId, String url, Set<String> roles, Integer pageNumber,
+    public ResponseEntity<RestApiResponse<Page<AuthorisationListDTO>>> handleFindByRolesAndUrlPaged(String applicationId, String url, Set<String> roles, Integer pageNumber,
             Integer pageSize) {
+        RestApiResponse<Page<AuthorisationListDTO>> responseData = new RestApiResponse<>();
         try {
             logger.debug("Searches for an Authorisation by " + "Url: " + url + " and Roles: " + roles);
-            Optional<?> data = Optional.of(authorisationService.findByRolesAndUrl(applicationId, url, roles, pageNumber, pageSize)); 
-            
-            ResponseEntity<?> response;
-
-            if (data.isPresent()) {
-                response = ResponseEntity.status(HttpStatus.OK).body(data.get());
-            } else {
-                response = ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-            }
-
-            return response;
+            Page<AuthorisationListDTO> data = authorisationService.findByRolesAndUrl(applicationId, url, roles, pageNumber, pageSize);
+            responseData.setData(data);
+            responseData.setSuccess(true);
+            responseData.setMessage("Authorisations page found successfully.");
+            return ResponseEntity.status(HttpStatus.OK).body(responseData);
         } catch (Exception e) {
             logger.error(e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            responseData.setSuccess(false);
+            responseData.setMessage(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseData);
         }
     }
 
     @Override
-    public ResponseEntity<?> handleFindRestrictedViewItems(String applicationId, String url, Set<String> roles) {
+    public ResponseEntity<RestApiResponse<Collection<AuthorisationListDTO>>> handleFindRestrictedViewItems(String applicationId, String url, Set<String> roles) {
+        RestApiResponse<Collection<AuthorisationListDTO>> responseData = new RestApiResponse<>();
         try {
             
             Collection<String> restrictedUrls = new ArrayList<>();
@@ -123,137 +132,154 @@ public class AuthorisationApiImpl extends AuthorisationApiBase {
                 restrictedUrls.add(r.getAccessPointUrl());
             });
 
-            return ResponseEntity.ok().body(restrictedUrls);
+            // Note: Base class expects Collection<AuthorisationListDTO> but we're returning Collection<String>
+            // This may need review - returning the actual AuthorisationListDTO collection instead
+            responseData.setData(restrictedViewItems);
+            responseData.setSuccess(true);
+            responseData.setMessage("Restricted view items found successfully.");
+            return ResponseEntity.status(HttpStatus.OK).body(responseData);
 
         } catch (Exception e) {
             e.printStackTrace();
             logger.error(e.getMessage());
-            return ResponseEntity.status(HttpStatus.NO_CONTENT)
-                    .body("Unknown error encountered. Please contact administrator.");
+            responseData.setSuccess(false);
+            responseData.setMessage("Unknown error encountered. Please contact administrator.");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseData);
         }
     }
 
     @Override
-    public ResponseEntity<?> handleGetAccessTypeCodeAuthorisations(String applicationId, Set<String> roles,
+    public ResponseEntity<RestApiResponse<Collection<AuthorisationListDTO>>> handleGetAccessTypeCodeAuthorisations(String applicationId, Set<String> roles,
             Set<String> accessPointTypeCodes) {
+        RestApiResponse<Collection<AuthorisationListDTO>> responseData = new RestApiResponse<>();
         try {
             logger.debug("Displays Authorisation by specified roles: " + roles + " and Access Point Type Code: "
                     + accessPointTypeCodes);
 
             roles.add("UNSECURED");
-            return ResponseEntity.ok()
-                    .body(authorisationService.getAccessTypeCodeAuthorisations(applicationId, roles, accessPointTypeCodes));
+            Collection<AuthorisationListDTO> data = authorisationService.getAccessTypeCodeAuthorisations(applicationId, roles, accessPointTypeCodes);
+            responseData.setData(data);
+            responseData.setSuccess(true);
+            responseData.setMessage("Access type code authorisations retrieved successfully.");
+            return ResponseEntity.status(HttpStatus.OK).body(responseData);
 
         } catch (Exception e) {
             e.printStackTrace();
             logger.error(e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body("An unknown error has occured. Please contact administrator.");
+            responseData.setSuccess(false);
+            responseData.setMessage("An unknown error has occured. Please contact administrator.");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseData);
         }
     }
 
     @Override
-    public ResponseEntity<?> handleGetAccessTypeCodeAuthorisationsPaged(String applicationId, Set<String> roles,
+    public ResponseEntity<RestApiResponse<Page<AuthorisationListDTO>>> handleGetAccessTypeCodeAuthorisationsPaged(String applicationId, Set<String> roles,
             Set<String> accessPointTypeCodes, Integer pageNumber, Integer pageSize) {
+        RestApiResponse<Page<AuthorisationListDTO>> responseData = new RestApiResponse<>();
         try {
             roles.add("UNSECURED");
-            Optional<?> data = Optional.of(authorisationService.getAccessTypeCodeAuthorisations(applicationId, roles,
-                    accessPointTypeCodes, pageNumber, pageSize)); // TODO: Add custom code here;
-            ResponseEntity<?> response;
-
-            if (data.isPresent()) {
-                response = ResponseEntity.status(HttpStatus.OK).body(data.get());
-            } else {
-                response = ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-            }
-
-            return response;
+            Page<AuthorisationListDTO> data = authorisationService.getAccessTypeCodeAuthorisations(applicationId, roles,
+                    accessPointTypeCodes, pageNumber, pageSize);
+            responseData.setData(data);
+            responseData.setSuccess(true);
+            responseData.setMessage("Access type code authorisations page retrieved successfully.");
+            return ResponseEntity.status(HttpStatus.OK).body(responseData);
         } catch (Exception e) {
             logger.error(e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            responseData.setSuccess(false);
+            responseData.setMessage(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseData);
         }
     }
 
     @Override
-    public ResponseEntity<?> handleGetAll() {
+    public ResponseEntity<RestApiResponse<Collection<AuthorisationListDTO>>> handleGetAll() {
+        RestApiResponse<Collection<AuthorisationListDTO>> responseData = new RestApiResponse<>();
         try {
 
             logger.debug("Displays all Authorisations");
-            return ResponseEntity.ok().body(this.authorisationService.getAll());
+            Collection<AuthorisationListDTO> data = this.authorisationService.getAll();
+            responseData.setData(data);
+            responseData.setSuccess(true);
+            responseData.setMessage("All authorisations retrieved successfully.");
+            return ResponseEntity.status(HttpStatus.OK).body(responseData);
 
         } catch (Exception e) {
             e.printStackTrace();
             logger.error(e.getMessage());
-            return ResponseEntity.badRequest().body("Unknown error encountered. Please contact administrator.");
+            responseData.setSuccess(false);
+            responseData.setMessage("Unknown error encountered. Please contact administrator.");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseData);
         }
     }
 
     @Override
-    public ResponseEntity<?> handleGetAllPaged(Integer pageNumber, Integer pageSize) {
+    public ResponseEntity<RestApiResponse<Page<AuthorisationListDTO>>> handleGetAllPaged(Integer pageNumber, Integer pageSize) {
+        RestApiResponse<Page<AuthorisationListDTO>> responseData = new RestApiResponse<>();
         try {
             logger.debug(
                     "Displays all Authoristions by specified Page Number: " + pageNumber + ", Page Size: " + pageSize);
-            return ResponseEntity.ok().body(authorisationService.getAll(pageNumber, pageSize));
+            Page<AuthorisationListDTO> data = authorisationService.getAll(pageNumber, pageSize);
+            responseData.setData(data);
+            responseData.setSuccess(true);
+            responseData.setMessage("Authorisations page retrieved successfully.");
+            return ResponseEntity.status(HttpStatus.OK).body(responseData);
 
         } catch (Exception e) {
             e.printStackTrace();
             logger.error(e.getMessage());
-            return ResponseEntity.status(HttpStatus.NO_CONTENT)
-                    .body("Unknown error encountered. Please contact administrator.");
+            responseData.setSuccess(false);
+            responseData.setMessage("Unknown error encountered. Please contact administrator.");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseData);
         }
     }
 
     @Override
-    public ResponseEntity<?> handleRemove(String id) {
+    public ResponseEntity<RestApiResponse<Boolean>> handleRemove(String id) {
+        RestApiResponse<Boolean> responseData = new RestApiResponse<>();
         try {
             logger.debug("Deletes an Authorisation by Id" + id);
-            Optional<Boolean> data = Optional.of(this.authorisationService.remove(id));
-            ResponseEntity<Boolean> response;
-
-            if (data.isPresent()) {
-                response = ResponseEntity.ok().body(data.get());
-            } else {
-                response = ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-            }
-
-            return response;
+            Boolean data = this.authorisationService.remove(id);
+            responseData.setData(data);
+            responseData.setSuccess(true);
+            responseData.setMessage("Authorisation removed successfully.");
+            return ResponseEntity.status(HttpStatus.OK).body(responseData);
 
         } catch (Exception e) {
             e.printStackTrace();
             logger.error(e.getMessage());
 
             if (e instanceof EmptyResultDataAccessException || e.getCause() instanceof EmptyResultDataAccessException) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Could not delete authorisation with id " + id);
+                responseData.setSuccess(false);
+                responseData.setMessage("Could not delete authorisation with id " + id);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(responseData);
 
             } else if (e.getMessage().contains("is in use") || e.getCause().getMessage().contains("is in use")) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body("This authorisation is in use and cannot be deleted.");
+                responseData.setSuccess(false);
+                responseData.setMessage("This authorisation is in use and cannot be deleted.");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(responseData);
             }
 
-            return ResponseEntity.badRequest()
-                    .body("Unknown error encountered when deleting authorisation with id " + id);
+            responseData.setSuccess(false);
+            responseData.setMessage("Unknown error encountered when deleting authorisation with id " + id);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseData);
         }
     }
 
     @Override
-    public ResponseEntity<?> handleSave(AuthorisationDTO authorisation) {
+    public ResponseEntity<RestApiResponse<AuthorisationDTO>> handleSave(AuthorisationDTO authorisation) {
+        RestApiResponse<AuthorisationDTO> responseData = new RestApiResponse<>();
         try {
             logger.debug("Saves Authorisation " + authorisation);
 
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             AuditTracker.auditTrail(authorisation, authentication);
 
-            Optional<AuthorisationDTO> data = Optional.of(authorisationService.save(authorisation)); // TODO: Add custom
-                                                                                                     // code here;
-            ResponseEntity<?> response;
-
-            if (data.isPresent()) {
-                response = ResponseEntity.ok().body(data.get());
-            } else {
-                response = ResponseEntity.status(HttpStatus.NOT_FOUND).body("Could not save authorisation.");
-            }
-
-            return response;
+            AuthorisationDTO data = authorisationService.save(authorisation);
+            responseData.setData(data);
+            responseData.setSuccess(true);
+            responseData.setMessage("Authorisation saved successfully.");
+            return ResponseEntity.status(HttpStatus.OK).body(responseData);
 
         } catch (IllegalArgumentException | AuthorisationServiceException e) {
 
@@ -276,179 +302,194 @@ public class AuthorisationApiImpl extends AuthorisationApiBase {
                     message = "Unknown error encountered. Please contact administrator.";
                 }
 
-                return ResponseEntity.badRequest().body(message);
+                responseData.setSuccess(false);
+                responseData.setMessage(message);
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseData);
 
             } else if (e.getCause() instanceof PSQLException) {
 
                 if (e.getCause().getMessage().contains("duplicate key")) {
                     if (e.getCause().getMessage().contains("(access_point_fk)")) {
 
-                        return ResponseEntity.badRequest().body(
-                                "Authorisation for this access point has already been created. Please edit it instead.");
+                        responseData.setSuccess(false);
+                        responseData.setMessage("Authorisation for this access point has already been created. Please edit it instead.");
+                        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseData);
                     }
                 } else if (e.getCause().getMessage().contains("null value in column")) {
 
                     if (e.getCause().getMessage().contains("column \"created_by\"")) {
-                        return ResponseEntity.badRequest().body("The created-by value is missing.");
+                        responseData.setSuccess(false);
+                        responseData.setMessage("The created-by value is missing.");
+                        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseData);
                     } else if (e.getCause().getMessage().contains("column \"created_date\"")) {
-                        return ResponseEntity.badRequest().body("The created date value is missing.");
+                        responseData.setSuccess(false);
+                        responseData.setMessage("The created date value is missing.");
+                        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseData);
                     }
 
                 }
 
-                return ResponseEntity.badRequest()
-                        .body("An unknown database error has occured. Please contact the administrator.");
+                responseData.setSuccess(false);
+                responseData.setMessage("An unknown database error has occured. Please contact the administrator.");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseData);
             }
 
-            return ResponseEntity.badRequest().body("Unknown error encountered. Please contact administrator.");
+            responseData.setSuccess(false);
+            responseData.setMessage("Unknown error encountered. Please contact administrator.");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseData);
         } catch (Exception e) {
 
             e.printStackTrace();
-            return ResponseEntity.badRequest().body("Unknown error encountered. Please contact administrator.");
+            responseData.setSuccess(false);
+            responseData.setMessage("Unknown error encountered. Please contact administrator.");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseData);
         }
     }
 
     @Override
-    public ResponseEntity<?> handleSearch(AuthorisationCriteria criteria) {
+    public ResponseEntity<RestApiResponse<Collection<AuthorisationListDTO>>> handleSearch(AuthorisationCriteria criteria) {
+        RestApiResponse<Collection<AuthorisationListDTO>> responseData = new RestApiResponse<>();
         try {
             logger.info("Searche for an Authorisation by criteria " + criteria);
 
-            return ResponseEntity.ok().body(authorisationService.search(criteria, null));
+            Collection<AuthorisationListDTO> data = authorisationService.search(criteria, null);
+            responseData.setData(data);
+            responseData.setSuccess(true);
+            responseData.setMessage("Authorisation search completed successfully.");
+            return ResponseEntity.status(HttpStatus.OK).body(responseData);
 
         } catch (Exception e) {
             logger.error(e.getMessage());
             e.printStackTrace();
-            return ResponseEntity.badRequest().body("Unknown error encountered. Please contact administrator.");
+            responseData.setSuccess(false);
+            responseData.setMessage("Unknown error encountered. Please contact administrator.");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseData);
         }
     }
 
     @Override
-    public ResponseEntity<?> handleSearchPaged(SearchObject<AuthorisationCriteria> criteria) {
+    public ResponseEntity<RestApiResponse<Collection<Page<AuthorisationListDTO>>>> handleSearchPaged(SearchObject<AuthorisationCriteria> criteria) {
+        RestApiResponse<Collection<Page<AuthorisationListDTO>>> responseData = new RestApiResponse<>();
         try {
 
-            Optional<?> data = Optional.of(authorisationService.search(criteria)); // TODO: Add custom code here;
-            ResponseEntity<?> response;
-
-            if (data.isPresent()) {
-                response = ResponseEntity.status(HttpStatus.OK).body(data.get());
-            } else {
-                response = ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-            }
-
-            return response;
+            // Note: Service returns Page but base class expects Collection<Page> - this may need review
+            Page<AuthorisationListDTO> pageData = authorisationService.search(criteria);
+            Collection<Page<AuthorisationListDTO>> data = Collections.singletonList(pageData);
+            responseData.setData(data);
+            responseData.setSuccess(true);
+            responseData.setMessage("Authorisation paged search completed successfully.");
+            return ResponseEntity.status(HttpStatus.OK).body(responseData);
         } catch (Exception e) {
             logger.error(e.getMessage());
             e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            responseData.setSuccess(false);
+            responseData.setMessage(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseData);
         }
     }
 
     @Override
-    public ResponseEntity<?> handleFindApplicationAuthorisationPaged(String applicationId, Integer pageNumber,
+    public ResponseEntity<RestApiResponse<Page<AuthorisationListDTO>>> handleFindApplicationAuthorisationPaged(String applicationId, Integer pageNumber,
             Integer pageSize) {
-        
+        RestApiResponse<Page<AuthorisationListDTO>> responseData = new RestApiResponse<>();
         try {
             logger.debug("Searches for an Authorisation by Application Id " + applicationId);
-            Optional<?> data = Optional.of(this.authorisationService.findApplicationAuthorisations(applicationId, pageNumber, pageSize)); // TODO: Add custom code here;
-            ResponseEntity<?> response;
-
-            if (data.isPresent()) {
-                response = ResponseEntity.ok().body(data.get());
-            } else {
-                response = ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(String.format("Authorisation with application id %d not found.", applicationId));
-            }
-
-            return response;
+            Page<AuthorisationListDTO> data = this.authorisationService.findApplicationAuthorisations(applicationId, pageNumber, pageSize);
+            responseData.setData(data);
+            responseData.setSuccess(true);
+            responseData.setMessage("Application authorisations page found successfully.");
+            return ResponseEntity.status(HttpStatus.OK).body(responseData);
 
         } catch (Exception e) {
             e.printStackTrace();
             String message = e.getMessage();
             if (e instanceof NoSuchElementException || e.getCause() instanceof NoSuchElementException
                     || e instanceof EntityNotFoundException || e.getCause() instanceof EntityNotFoundException) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(String.format("Authorisation with application id %s not found.", applicationId));
+                responseData.setSuccess(false);
+                responseData.setMessage(String.format("Authorisation with application id %s not found.", applicationId));
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(responseData);
             } else {
                 message = "Unknown error encountered. Please contact administrator.";
             }
 
             logger.error(message);
-            return ResponseEntity.badRequest().body(message);
+            responseData.setSuccess(false);
+            responseData.setMessage(message);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseData);
         }
     }
 
     @Override
-    public ResponseEntity<?> handleFindApplicationAuthorisations(String applicationId) {
-        
+    public ResponseEntity<RestApiResponse<Collection<AuthorisationListDTO>>> handleFindApplicationAuthorisations(String applicationId) {
+        RestApiResponse<Collection<AuthorisationListDTO>> responseData = new RestApiResponse<>();
         try {
             logger.debug("Searches for an Authorisation by Application Id " + applicationId);
-            Optional<?> data = Optional.of(this.authorisationService.findApplicationAuthorisations(applicationId)); // TODO: Add custom code here;
-            ResponseEntity<?> response;
-
-            if (data.isPresent()) {
-                response = ResponseEntity.ok().body(data.get());
-            } else {
-                response = ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(String.format("Authorisation with application id %d not found.", applicationId));
-            }
-
-            return response;
+            Collection<AuthorisationListDTO> data = this.authorisationService.findApplicationAuthorisations(applicationId);
+            responseData.setData(data);
+            responseData.setSuccess(true);
+            responseData.setMessage("Application authorisations found successfully.");
+            return ResponseEntity.status(HttpStatus.OK).body(responseData);
 
         } catch (Exception e) {
             e.printStackTrace();
             String message = e.getMessage();
             if (e instanceof NoSuchElementException || e.getCause() instanceof NoSuchElementException
                     || e instanceof EntityNotFoundException || e.getCause() instanceof EntityNotFoundException) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(String.format("Authorisation with application id %s not found.", applicationId));
+                responseData.setSuccess(false);
+                responseData.setMessage(String.format("Authorisation with application id %s not found.", applicationId));
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(responseData);
             } else {
                 message = "Unknown error encountered. Please contact administrator.";
             }
 
             logger.error(message);
-            return ResponseEntity.badRequest().body(message);
+            responseData.setSuccess(false);
+            responseData.setMessage(message);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseData);
         }
     }
 
     @Override
-    public ResponseEntity<?> handleFindAuthorisedApplications(Set<String> roles) {
-        
+    public ResponseEntity<RestApiResponse<Collection<AuthorisationListDTO>>> handleFindAuthorisedApplications(Set<String> roles) {
+        RestApiResponse<Collection<AuthorisationListDTO>> responseData = new RestApiResponse<>();
         try {
             logger.debug("Searches for Authorisation by roles " + roles);
-            return ResponseEntity.ok().body(authorisationService.findAuthorisedApplications(null, roles));
+            Collection<AuthorisationListDTO> data = authorisationService.findAuthorisedApplications(null, roles);
+            responseData.setData(data);
+            responseData.setSuccess(true);
+            responseData.setMessage("Authorised applications found successfully.");
+            return ResponseEntity.status(HttpStatus.OK).body(responseData);
 
         } catch (Exception e) {
             e.printStackTrace();
             logger.error(e.getMessage());
-            return ResponseEntity.status(HttpStatus.NO_CONTENT)
-                    .body("Unknown error encountered. Please contact administrator.");
+            responseData.setSuccess(false);
+            responseData.setMessage("Unknown error encountered. Please contact administrator.");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseData);
         }
     }
 
     @Override
-    public ResponseEntity<?> handleFindAuthorisedApplicationsPaged(Set<String> roles, Integer pageNumber,
+    public ResponseEntity<RestApiResponse<Page<AuthorisationListDTO>>> handleFindAuthorisedApplicationsPaged(Set<String> roles, Integer pageNumber,
             Integer pageSize) {
-        
+        RestApiResponse<Page<AuthorisationListDTO>> responseData = new RestApiResponse<>();
         try {
             logger.debug("Searches for Authorisation by roles " + roles);
-            Optional<?> data = Optional.of(authorisationService.findAuthorisedApplications(null, roles, pageNumber, pageSize)); // TODO: Add custom code here;
-            ResponseEntity<?> response;
-
-            if (data.isPresent()) {
-                response = ResponseEntity.ok().body(data.get());
-            } else {
-                response = ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-            }
-
-            return response;
+            Page<AuthorisationListDTO> data = authorisationService.findAuthorisedApplications(null, roles, pageNumber, pageSize);
+            responseData.setData(data);
+            responseData.setSuccess(true);
+            responseData.setMessage("Authorised applications page found successfully.");
+            return ResponseEntity.status(HttpStatus.OK).body(responseData);
         } catch (Exception e) {
             logger.error(e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            responseData.setSuccess(false);
+            responseData.setMessage(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseData);
         }
     }
 
     @Override
-    public ResponseEntity<?> handleFindMyAuthorisedApplications(String application) {
+    public ResponseEntity<RestApiResponse<Collection<AuthorisationListDTO>>> handleFindMyAuthorisedApplications(String application) {
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
@@ -466,17 +507,22 @@ public class AuthorisationApiImpl extends AuthorisationApiBase {
     }
 
     @Override
-    public ResponseEntity<?> handleFindByParentAndRoles(String parentId, Set<String> roles) {
-        
+    public ResponseEntity<RestApiResponse<Collection<AuthorisationListDTO>>> handleFindByParentAndRoles(String parentId, Set<String> roles) {
+        RestApiResponse<Collection<AuthorisationListDTO>> responseData = new RestApiResponse<>();
         try {
             logger.debug("Searches for Authorisation by Parent Id " + parentId + " and Roles: " + roles);
-            return ResponseEntity.ok().body(authorisationService.findByParentAndRoles(parentId, roles));
+            Collection<AuthorisationListDTO> data = authorisationService.findByParentAndRoles(parentId, roles);
+            responseData.setData(data);
+            responseData.setSuccess(true);
+            responseData.setMessage("Authorisations found by parent and roles successfully.");
+            return ResponseEntity.status(HttpStatus.OK).body(responseData);
 
         } catch (Exception e) {
             e.printStackTrace();
             logger.error(e.getMessage());
-            return ResponseEntity.status(HttpStatus.NO_CONTENT)
-                    .body("Unknown error encountered. Please contact administrator.");
+            responseData.setSuccess(false);
+            responseData.setMessage("Unknown error encountered. Please contact administrator.");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseData);
         }
     }
 

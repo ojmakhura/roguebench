@@ -33,7 +33,7 @@ export class ChangePasswordImplComponent extends ChangePasswordComponent {
         super(data);
     }
 
-    override beforeOnInit(form: ChangePasswordVarsForm): ChangePasswordVarsForm{
+    override beforeOnInit(form: ChangePasswordVarsForm): ChangePasswordVarsForm{     
         return form;
     }
 

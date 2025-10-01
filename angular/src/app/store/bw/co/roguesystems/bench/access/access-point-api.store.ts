@@ -7,10 +7,11 @@ import { tapResponse } from '@ngrx/operators';
 import { AppState } from '@app/store/app-state';
 import { SearchObject } from '@app/model/search-object';
 import { Page } from '@app/model/page.model';
-import { AccessPointCriteria } from '@app/model/bw/co/roguesystems/bench/access/access-point-criteria';
 import { AccessPointListDTO } from '@app/model/bw/co/roguesystems/bench/access/access-point-list-dto';
+import { AccessPointCriteria } from '@app/model/bw/co/roguesystems/bench/access/access-point-criteria';
 import { AccessPointDTO } from '@app/model/bw/co/roguesystems/bench/access/access-point-dto';
 import { AccessPointApi } from '@app/service/bw/co/roguesystems/bench/access/access-point-api';
+import { RestApiResponse } from '@app/model/rest-api-response.model';
 
 export type AccessPointApiState = AppState<any, any> & {};
 
@@ -19,11 +20,13 @@ const initialState: AccessPointApiState = {
   dataList: [],
   dataPage: new Page<any>(),
   searchCriteria: new SearchObject<any>(),
-  error: null,
+  status: 0,
   loading: false,
   success: false,
   messages: [],
-  loaderMessage: ''
+  loaderMessage: '',
+  details: '',
+  error: false
 };
 
 export const AccessPointApiStore = signalStore(
@@ -35,89 +38,133 @@ export const AccessPointApiStore = signalStore(
       reset: () => {
         patchState(store, initialState);
       },
-      findApplicationAccessPoints: rxMethod<{ applicationId: string | any }>(
+      findApplicationAccessPoints: rxMethod<{applicationId: string | any }>(
         switchMap((data: any) => {
           patchState(store, { loading: true, loaderMessage: 'Loading ...' });
-          return accessPointApi.findApplicationAccessPoints(data.applicationId,).pipe(
+          return accessPointApi.findApplicationAccessPoints(data.applicationId, ).pipe(
             tapResponse({
-              next: (dataList: AccessPointListDTO[] | any[]) => {
+              next: (response: RestApiResponse<AccessPointListDTO[] | any[]>) => {
                 patchState(
-                  store,
+                  store, 
                   {
-                    dataList,
-                    loading: false,
+                    dataList: response?.data, 
+                    loading: false, 
+                    status: (response?.status) ,
+                    success: (response?.success || false), 
+                    messages: [response.message || 'Success!!'],
                     error: false,
-                    success: true,
-                    messages: []
                   }
                 );
               },
               error: (error: any) => {
                 patchState(
-                  store, {
-                  error,
-                  loading: false,
-                  success: false,
-                  messages: [error?.error ? error.error : error]
-                }
+                  store, { 
+                    status: (error?.status || 0), 
+                    loading: false, 
+                    success: false,
+                    error: true,
+                    messages: [error.error.message || 'An error occurred'], 
+                  }
                 );
               },
             }),
           );
         }),
       ),
-      findApplicationAccessPointsPaged: rxMethod<{ applicationId: string | any, pageNumber: number | any, pageSize: number | any }>(
+      findApplicationAccessPointsPaged: rxMethod<{applicationId: string | any , pageNumber: number | any , pageSize: number | any }>(
         switchMap((data: any) => {
           patchState(store, { loading: true, loaderMessage: 'Loading ...' });
-          return accessPointApi.findApplicationAccessPointsPaged(data.applicationId, data.pageNumber, data.pageSize,).pipe(
+          return accessPointApi.findApplicationAccessPointsPaged(data.applicationId, data.pageNumber, data.pageSize, ).pipe(
             tapResponse({
-              next: (dataList: AccessPointListDTO[] | any[]) => {
+              next: (response: RestApiResponse<Page<AccessPointListDTO> | any>) => {
                 patchState(
-                  store,
+                  store, 
                   {
-                    dataList,
-                    loading: false,
+                    dataPage: response?.data,
+                    loading: false, 
+                    status: (response?.status) ,
+                    success: (response?.success || false), 
+                    messages: [response.message || 'Success!!'],
                     error: false,
-                    success: true,
-                    messages: []
                   }
                 );
               },
               error: (error: any) => {
                 patchState(
-                  store, {
-                  error,
-                  loading: false,
-                  success: false,
-                  messages: [error?.error ? error.error : error]
-                }
+                  store, { 
+                    status: (error?.status || 0), 
+                    loading: false, 
+                    success: false,
+                    error: true,
+                    messages: [error.error.message || 'An error occurred'], 
+                  }
                 );
               },
             }),
           );
         }),
       ),
-      findById: rxMethod<{ id: string | any }>(
+      findById: rxMethod<{id: string | any }>(
         switchMap((data: any) => {
-          patchState(store, { loading: true, loaderMessage: 'Loading Access Point...' });
-          return accessPointApi.findById(data.id).pipe(
+          patchState(store, { loading: true, loaderMessage: 'Loading ...' });
+          return accessPointApi.findById(data.id, ).pipe(
             tapResponse({
-              next: (data: AccessPointDTO | any) => {
-                patchState(store, {
-                  data,
-                  loading: false,
-                  error: false,
-                  success: true,
-                  messages: ['Access Point loaded successfully'],
-                });
+              next: (response: RestApiResponse<AccessPointDTO | any>) => {
+                patchState(
+                  store, 
+                  {
+                    data: response?.data,
+                    loading: false, 
+                    status: (response?.status) ,
+                    success: (response?.success || false), 
+                    messages: [response.message || 'Success!!'],
+                    error: false,
+                  }
+                );
               },
               error: (error: any) => {
-                patchState(store, {
-                  error,
-                  loading: false,
-                  success: false,
-                  messages: [error?.error ? error.error : error],
-                });
+                patchState(
+                  store, { 
+                    status: (error?.status || 0), 
+                    loading: false, 
+                    success: false,
+                    error: true,
+                    messages: [error.error.message || 'An error occurred'], 
+                  }
+                );
+              },
+            }),
+          );
+        }),
+      ),
+      findByParent: rxMethod<{parentId: string | any }>(
+        switchMap((data: any) => {
+          patchState(store, { loading: true, loaderMessage: 'Loading ...' });
+          return accessPointApi.findByParent(data.parentId, ).pipe(
+            tapResponse({
+              next: (response: RestApiResponse<AccessPointListDTO[] | any[]>) => {
+                patchState(
+                  store, 
+                  {
+                    dataList: response?.data, 
+                    loading: false, 
+                    status: (response?.status) ,
+                    success: (response?.success || false), 
+                    messages: [response.message || 'Success!!'],
+                    error: false,
+                  }
+                );
+              },
+              error: (error: any) => {
+                patchState(
+                  store, { 
+                    status: (error?.status || 0), 
+                    loading: false, 
+                    success: false,
+                    error: true,
+                    messages: [error.error.message || 'An error occurred'], 
+                  }
+                );
               },
             }),
           );
@@ -125,209 +172,263 @@ export const AccessPointApiStore = signalStore(
       ),
       getAll: rxMethod<void>(
         switchMap(() => {
-          patchState(store, { loading: true, loaderMessage: 'Loading all Access Points...' });
+          patchState(store, { loading: true, loaderMessage: 'Loading ...' });
           return accessPointApi.getAll().pipe(
             tapResponse({
-              next: (dataList: AccessPointListDTO[] | any[]) => {
-                patchState(store, {
-                  dataList,
-                  loading: false,
-                  error: false,
-                  success: true,
-                  messages: [],
-                });
+              next: (response: RestApiResponse<AccessPointListDTO[] | any[]>) => {
+                patchState(
+                  store, 
+                  {
+                    dataList: response?.data, 
+                    loading: false, 
+                    status: (response?.status) ,
+                    success: (response?.success || false), 
+                    messages: [response.message || 'Success!!'],
+                    error: false,
+                  }
+                );
               },
               error: (error: any) => {
-                patchState(store, {
-                  error,
-                  loading: false,
-                  success: false,
-                  messages: [error?.error ? error.error : error],
-                });
+                patchState(
+                  store, { 
+                    status: (error?.status || 0), 
+                    loading: false, 
+                    success: false,
+                    error: true,
+                    messages: [error.error.message || 'An error occurred'], 
+                  }
+                );
               },
             }),
           );
         }),
       ),
-      getAllPaged: rxMethod<{ pageNumber: number | any; pageSize: number | any }>(
-        switchMap((data: any) => {
-          patchState(store, { loading: true, loaderMessage: 'Loading a page of Access Points...' });
-          return accessPointApi.getAllPaged(data.pageNumber, data.pageSize).pipe(
-            tapResponse({
-              next: (dataPage: Page<AccessPointListDTO>[] | any) => {
-                patchState(store, {
-                  dataPage,
-                  loading: false,
-                  error: false,
-                  success: true,
-                  messages: [`Page ${dataPage.pageable.pageNumber + 1} of Access Points loaded successfully`],
-                });
-              },
-              error: (error: any) => {
-                patchState(store, {
-                  error,
-                  loading: false,
-                  success: false,
-                  messages: [error?.error ? error.error : error],
-                });
-              },
-            }),
-          );
-        }),
-      ),
-      pagedSearch: rxMethod<{ criteria: SearchObject<AccessPointCriteria> | any }>(
-        switchMap((data: any) => {
-          patchState(store, { loading: true, loaderMessage: 'Searching for Access Points...' });
-          return accessPointApi.pagedSearch(data.criteria).pipe(
-            tapResponse({
-              next: (dataPage: Page<AccessPointListDTO> | any) => {
-                patchState(store, {
-                  dataPage,
-                  loading: false,
-                  error: false,
-                  success: true,
-                  messages: [`Page ${dataPage.pageable.pageNumber + 1} of Access Points loaded successfully`],
-                });
-              },
-              error: (error: any) => {
-                patchState(store, {
-                  error,
-                  loading: false,
-                  success: false,
-                  messages: [error?.error ? error.error : error],
-                });
-              },
-            }),
-          );
-        }),
-      ),
-      remove: rxMethod<{ id: string | any }>(
-        switchMap((data: any) => {
-          patchState(store, { loading: true, loaderMessage: 'Removing Access Point...' });
-          return accessPointApi.remove(data.id).pipe(
-            tapResponse({
-              next: (data: boolean | any) => {
-                patchState(store, {
-                  data: new AccessPointDTO(),
-                  dataList: [],
-                  dataPage: new Page<any>(),
-                  loading: false,
-                  error: false,
-                  success: true,
-                  messages: [`Access Point removed successfully`],
-                });
-              },
-              error: (error: any) => {
-                patchState(store, {
-                  error,
-                  loading: false,
-                  success: false,
-                  messages: [error?.error ? error.error : error],
-                });
-              },
-            }),
-          );
-        }),
-      ),
-      save: rxMethod<{ accessPoint: AccessPointDTO | any }>(
-        switchMap((data: any) => {
-          patchState(store, { loading: true, loaderMessage: 'Saving Access Point...' });
-          return accessPointApi.save(data.accessPoint).pipe(
-            tapResponse({
-              next: (data: AccessPointDTO | any) => {
-                patchState(store, {
-                  data,
-                  loading: false,
-                  error: false,
-                  success: true,
-                  messages: [`Access Point ${data.name} saved successfully`],
-                });
-              },
-              error: (error: any) => {
-                patchState(store, {
-                  error,
-                  loading: false,
-                  success: false,
-                  messages: [error?.error ? error.error : error],
-                });
-              },
-            }),
-          );
-        }),
-      ),
-      search: rxMethod<{ criteria: AccessPointCriteria | any }>(
-        switchMap((data: any) => {
-          patchState(store, { loading: true, loaderMessage: 'Searching for Access Points...' });
-          return accessPointApi.search(data.criteria).pipe(
-            tapResponse({
-              next: (dataList: AccessPointListDTO[] | any[]) => {
-                patchState(store, {
-                  dataList,
-                  loading: false,
-                  error: false,
-                  success: true,
-                  messages: [`Access Points loaded successfully`],
-                });
-              },
-              error: (error: any) => {
-                patchState(store, {
-                  error,
-                  loading: false,
-                  success: false,
-                  messages: [error?.error ? error.error : error],
-                });
-              },
-            }),
-          );
-        }),
-      ),
-      pagedSearchOr: rxMethod<{ criteria: SearchObject<AccessPointCriteria> | any }>(
+      getAllPaged: rxMethod<{pageNumber: number | any , pageSize: number | any }>(
         switchMap((data: any) => {
           patchState(store, { loading: true, loaderMessage: 'Loading ...' });
-          return accessPointApi.pagedSearchOr(data.criteria).pipe(
+          return accessPointApi.getAllPaged(data.pageNumber, data.pageSize, ).pipe(
             tapResponse({
-              next: (dataPage: Page<AccessPointListDTO> | any) => {
-                patchState(store, {
-                  dataPage,
-                  loading: false,
-                  error: false,
-                  success: true,
-                  messages: [`Page ${dataPage.pageable.pageNumber + 1} of Access Points loaded successfully`],
-                });
+              next: (response: RestApiResponse<Page<AccessPointListDTO> | any>) => {
+                patchState(
+                  store, 
+                  {
+                    dataPage: response?.data,
+                    loading: false, 
+                    status: (response?.status) ,
+                    success: (response?.success || false), 
+                    messages: [response.message || 'Success!!'],
+                    error: false,
+                  }
+                );
               },
               error: (error: any) => {
-                patchState(store, {
-                  error,
-                  loading: false,
-                  success: false,
-                  messages: [error?.error ? error.error : error],
-                });
+                patchState(
+                  store, { 
+                    status: (error?.status || 0), 
+                    loading: false, 
+                    success: false,
+                    error: true,
+                    messages: [error.error.message || 'An error occurred'], 
+                  }
+                );
               },
             }),
           );
         }),
       ),
-      searchOr: rxMethod<{ criteria: AccessPointCriteria | any }>(
+      pagedSearch: rxMethod<{criteria: SearchObject<AccessPointCriteria> | any }>(
         switchMap((data: any) => {
           patchState(store, { loading: true, loaderMessage: 'Loading ...' });
-          return accessPointApi.searchOr(data.criteria).pipe(
+          return accessPointApi.pagedSearch(data.criteria, ).pipe(
             tapResponse({
-              next: (dataList: AccessPointListDTO[] | any[]) => {
-                patchState(store, {
-                  dataList,
-                  loading: false,
-                  error: false,
-                  success: true,
-                  messages: [`Access Points loaded successfully`],
-                });
+              next: (response: RestApiResponse<Page<AccessPointListDTO> | any>) => {
+                patchState(
+                  store, 
+                  {
+                    dataPage: response?.data,
+                    loading: false, 
+                    status: (response?.status) ,
+                    success: (response?.success || false), 
+                    messages: [response.message || 'Success!!'],
+                    error: false,
+                  }
+                );
               },
               error: (error: any) => {
-                patchState(store, {
-                  error,
-                  loading: false,
-                  success: false,
-                  messages: [error?.error ? error.error : error],
-                });
+                patchState(
+                  store, { 
+                    status: (error?.status || 0), 
+                    loading: false, 
+                    success: false,
+                    error: true,
+                    messages: [error.error.message || 'An error occurred'], 
+                  }
+                );
+              },
+            }),
+          );
+        }),
+      ),
+      pagedSearchOr: rxMethod<{criteria: SearchObject<AccessPointCriteria> | any }>(
+        switchMap((data: any) => {
+          patchState(store, { loading: true, loaderMessage: 'Loading ...' });
+          return accessPointApi.pagedSearchOr(data.criteria, ).pipe(
+            tapResponse({
+              next: (response: RestApiResponse<Page<AccessPointListDTO> | any>) => {
+                patchState(
+                  store, 
+                  {
+                    dataPage: response?.data,
+                    loading: false, 
+                    status: (response?.status) ,
+                    success: (response?.success || false), 
+                    messages: [response.message || 'Success!!'],
+                    error: false,
+                  }
+                );
+              },
+              error: (error: any) => {
+                patchState(
+                  store, { 
+                    status: (error?.status || 0), 
+                    loading: false, 
+                    success: false,
+                    error: true,
+                    messages: [error.error.message || 'An error occurred'], 
+                  }
+                );
+              },
+            }),
+          );
+        }),
+      ),
+      remove: rxMethod<{id: string | any }>(
+        switchMap((data: any) => {
+          patchState(store, { loading: true, loaderMessage: 'Loading ...' });
+          return accessPointApi.remove(data.id, ).pipe(
+            tapResponse({
+              next: (response: RestApiResponse<boolean | any>) => {
+                patchState(
+                  store, 
+                  {
+                    data: response?.data,
+                    loading: false, 
+                    status: (response?.status) ,
+                    success: (response?.success || false), 
+                    messages: [response.message || 'Success!!'],
+                    error: false,
+                  }
+                );
+              },
+              error: (error: any) => {
+                patchState(
+                  store, { 
+                    status: (error?.status || 0), 
+                    loading: false, 
+                    success: false,
+                    error: true,
+                    messages: [error.error.message || 'An error occurred'], 
+                  }
+                );
+              },
+            }),
+          );
+        }),
+      ),
+      save: rxMethod<{accessPoint: AccessPointDTO | any }>(
+        switchMap((data: any) => {
+          patchState(store, { loading: true, loaderMessage: 'Loading ...' });
+          return accessPointApi.save(data.accessPoint, ).pipe(
+            tapResponse({
+              next: (response: RestApiResponse<AccessPointDTO | any>) => {
+                patchState(
+                  store, 
+                  {
+                    data: response?.data,
+                    loading: false, 
+                    status: (response?.status) ,
+                    success: (response?.success || false), 
+                    messages: [response.message || 'Success!!'],
+                    error: false,
+                  }
+                );
+              },
+              error: (error: any) => {
+                patchState(
+                  store, { 
+                    status: (error?.status || 0), 
+                    loading: false, 
+                    success: false,
+                    error: true,
+                    messages: [error.error.message || 'An error occurred'], 
+                  }
+                );
+              },
+            }),
+          );
+        }),
+      ),
+      search: rxMethod<{criteria: AccessPointCriteria | any }>(
+        switchMap((data: any) => {
+          patchState(store, { loading: true, loaderMessage: 'Loading ...' });
+          return accessPointApi.search(data.criteria, ).pipe(
+            tapResponse({
+              next: (response: RestApiResponse<AccessPointListDTO[] | any[]>) => {
+                patchState(
+                  store, 
+                  {
+                    dataList: response?.data, 
+                    loading: false, 
+                    status: (response?.status) ,
+                    success: (response?.success || false), 
+                    messages: [response.message || 'Success!!'],
+                    error: false,
+                  }
+                );
+              },
+              error: (error: any) => {
+                patchState(
+                  store, { 
+                    status: (error?.status || 0), 
+                    loading: false, 
+                    success: false,
+                    error: true,
+                    messages: [error.error.message || 'An error occurred'], 
+                  }
+                );
+              },
+            }),
+          );
+        }),
+      ),
+      searchOr: rxMethod<{criteria: AccessPointCriteria | any }>(
+        switchMap((data: any) => {
+          patchState(store, { loading: true, loaderMessage: 'Loading ...' });
+          return accessPointApi.searchOr(data.criteria, ).pipe(
+            tapResponse({
+              next: (response: RestApiResponse<AccessPointListDTO[] | any[]>) => {
+                patchState(
+                  store, 
+                  {
+                    dataList: response?.data, 
+                    loading: false, 
+                    status: (response?.status) ,
+                    success: (response?.success || false), 
+                    messages: [response.message || 'Success!!'],
+                    error: false,
+                  }
+                );
+              },
+              error: (error: any) => {
+                patchState(
+                  store, { 
+                    status: (error?.status || 0), 
+                    loading: false, 
+                    success: false,
+                    error: true,
+                    messages: [error.error.message || 'An error occurred'], 
+                  }
+                );
               },
             }),
           );

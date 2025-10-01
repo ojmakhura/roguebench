@@ -52,6 +52,9 @@ push_api_image:
 
 update_version:
 	mvn versions:set -DnewVersion=${version}
+	
+show_version:
+	mvn help:evaluate -Dexpression=project.version -q -DforceStdout 
 
 ###
 ## Run the local api and web

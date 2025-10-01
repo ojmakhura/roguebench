@@ -5,7 +5,9 @@
 //
 package bw.co.roguesystems.bench.user;
 
+import bw.co.roguesystems.bench.RestApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
 import org.springframework.http.HttpStatus;
@@ -29,249 +31,210 @@ public class UserApiImpl extends UserApiBase {
 
 
     @Override
-    public ResponseEntity<?> handleAddClientRoles(String clientId, Set<String> roles, String userId) {
+    public ResponseEntity<RestApiResponse<UserDTO>> handleAddClientRoles(String clientId, Set<String> roles, String userId) {
+        RestApiResponse<UserDTO> responseData = new RestApiResponse<>();
         try {
-            Optional<?> data = Optional.empty(); // TODO: Add custom code here;
-            ResponseEntity<?> response;
-
-            if(data.isPresent()) {
-                response = ResponseEntity.status(HttpStatus.OK).body(data.get());
-            } else {
-                response = ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-            }
-
-            return response;
+            // TODO: Add custom code here - this is a placeholder implementation
+            responseData.setSuccess(false);
+            responseData.setMessage("Add client roles functionality not yet implemented.");
+            return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body(responseData);
         } catch (Exception e) {
             logger.error(e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            responseData.setSuccess(false);
+            responseData.setMessage(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseData);
         }
     }
 
     @Override
-    public ResponseEntity<?> handleAddRole(String userId, String role) {
+    public ResponseEntity<RestApiResponse<Boolean>> handleAddRole(String userId, String role) {
+        RestApiResponse<Boolean> responseData = new RestApiResponse<>();
         try {
-            Optional<?> data = Optional.empty(); // TODO: Add custom code here;
-            ResponseEntity<?> response;
-
-            if(data.isPresent()) {
-                response = ResponseEntity.status(HttpStatus.OK).body(data.get());
-            } else {
-                response = ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-            }
-
-            return response;
+            // TODO: Add custom code here - this is a placeholder implementation
+            responseData.setSuccess(false);
+            responseData.setMessage("Add role functionality not yet implemented.");
+            return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body(responseData);
         } catch (Exception e) {
             logger.error(e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            responseData.setSuccess(false);
+            responseData.setMessage(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseData);
         }
     }
 
     @Override
-    public ResponseEntity<?> handleChangePassword(String userId, String newPassword) {
+    public ResponseEntity<RestApiResponse<String>> handleChangePassword(String userId, String newPassword) {
+        RestApiResponse<String> responseData = new RestApiResponse<>();
         try {
-            Optional<?> data = Optional.empty(); // TODO: Add custom code here;
-            ResponseEntity<?> response;
-
-            if(data.isPresent()) {
-                response = ResponseEntity.status(HttpStatus.OK).body(data.get());
-            } else {
-                response = ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-            }
-
-            return response;
+            // TODO: Add custom code here - this is a placeholder implementation
+            responseData.setSuccess(false);
+            responseData.setMessage("Change password functionality not yet implemented.");
+            return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body(responseData);
         } catch (Exception e) {
             logger.error(e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            responseData.setSuccess(false);
+            responseData.setMessage(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseData);
         }
     }
 
     @Override
-    public ResponseEntity<?> handleFindByClientRoles(Set<String> roles, String clientId) {
+    public ResponseEntity<RestApiResponse<Collection<UserDTO>>> handleFindByClientRoles(Set<String> roles, String clientId) {
+        RestApiResponse<Collection<UserDTO>> responseData = new RestApiResponse<>();
         try {
-            Optional<?> data = Optional.empty(); // TODO: Add custom code here;
-            ResponseEntity<?> response;
-
-            if(data.isPresent()) {
-                response = ResponseEntity.status(HttpStatus.OK).body(data.get());
-            } else {
-                response = ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-            }
-
-            return response;
+            // TODO: Add custom code here - this is a placeholder implementation
+            responseData.setSuccess(false);
+            responseData.setMessage("Find by client roles functionality not yet implemented.");
+            return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body(responseData);
         } catch (Exception e) {
             logger.error(e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            responseData.setSuccess(false);
+            responseData.setMessage(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseData);
         }
     }
 
     @Override
-    public ResponseEntity<?> handleFindByDepartmentId(String departmentId) {
+    public ResponseEntity<RestApiResponse<Collection<UserDTO>>> handleFindByDepartmentId(String departmentId) {
+        RestApiResponse<Collection<UserDTO>> responseData = new RestApiResponse<>();
         try {
-            Optional<?> data = Optional.empty(); // TODO: Add custom code here;
-            ResponseEntity<?> response;
-
-            if(data.isPresent()) {
-                response = ResponseEntity.status(HttpStatus.OK).body(data.get());
-            } else {
-                response = ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-            }
-
-            return response;
+            // TODO: Add custom code here - this is a placeholder implementation
+            responseData.setSuccess(false);
+            responseData.setMessage("Find by department ID functionality not yet implemented.");
+            return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body(responseData);
         } catch (Exception e) {
             logger.error(e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            responseData.setSuccess(false);
+            responseData.setMessage(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseData);
         }
     }
 
     @Override
-    public ResponseEntity<?> handleFindByDepartmentName(String departmentName) {
+    public ResponseEntity<RestApiResponse<Collection<UserDTO>>> handleFindByDepartmentName(String departmentName) {
+        RestApiResponse<Collection<UserDTO>> responseData = new RestApiResponse<>();
         try {
-            Optional<?> data = Optional.empty(); // TODO: Add custom code here;
-            ResponseEntity<?> response;
-
-            if(data.isPresent()) {
-                response = ResponseEntity.status(HttpStatus.OK).body(data.get());
-            } else {
-                response = ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-            }
-
-            return response;
+            // TODO: Add custom code here - this is a placeholder implementation
+            responseData.setSuccess(false);
+            responseData.setMessage("Find by department name functionality not yet implemented.");
+            return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body(responseData);
         } catch (Exception e) {
             logger.error(e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            responseData.setSuccess(false);
+            responseData.setMessage(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseData);
         }
     }
 
     @Override
-    public ResponseEntity<?> handleFindByRealmRoles(Set<String> roles) {
+    public ResponseEntity<RestApiResponse<Collection<UserDTO>>> handleFindByRealmRoles(Set<String> roles) {
+        RestApiResponse<Collection<UserDTO>> responseData = new RestApiResponse<>();
         try {
-            Optional<?> data = Optional.empty(); // TODO: Add custom code here;
-            ResponseEntity<?> response;
-
-            if(data.isPresent()) {
-                response = ResponseEntity.status(HttpStatus.OK).body(data.get());
-            } else {
-                response = ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-            }
-
-            return response;
+            // TODO: Add custom code here - this is a placeholder implementation
+            responseData.setSuccess(false);
+            responseData.setMessage("Find by realm roles functionality not yet implemented.");
+            return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body(responseData);
         } catch (Exception e) {
             logger.error(e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            responseData.setSuccess(false);
+            responseData.setMessage(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseData);
         }
     }
 
     @Override
-    public ResponseEntity<?> handleFindUserById(String userId) {
+    public ResponseEntity<RestApiResponse<UserDTO>> handleFindUserById(String userId) {
+        RestApiResponse<UserDTO> responseData = new RestApiResponse<>();
         try {
-            Optional<?> data = Optional.empty(); // TODO: Add custom code here;
-            ResponseEntity<?> response;
-
-            if(data.isPresent()) {
-                response = ResponseEntity.status(HttpStatus.OK).body(data.get());
-            } else {
-                response = ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-            }
-
-            return response;
+            // TODO: Add custom code here - this is a placeholder implementation
+            responseData.setSuccess(false);
+            responseData.setMessage("Find user by ID functionality not yet implemented.");
+            return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body(responseData);
         } catch (Exception e) {
             logger.error(e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            responseData.setSuccess(false);
+            responseData.setMessage(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseData);
         }
     }
 
     @Override
-    public ResponseEntity<?> handleLoadUsers() {
+    public ResponseEntity<RestApiResponse<Collection<UserDTO>>> handleLoadUsers() {
+        RestApiResponse<Collection<UserDTO>> responseData = new RestApiResponse<>();
         try {
-            Optional<?> data = Optional.empty(); // TODO: Add custom code here;
-            ResponseEntity<?> response;
-
-            if(data.isPresent()) {
-                response = ResponseEntity.status(HttpStatus.OK).body(data.get());
-            } else {
-                response = ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-            }
-
-            return response;
+            // TODO: Add custom code here - this is a placeholder implementation
+            responseData.setSuccess(false);
+            responseData.setMessage("Load users functionality not yet implemented.");
+            return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body(responseData);
         } catch (Exception e) {
             logger.error(e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            responseData.setSuccess(false);
+            responseData.setMessage(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseData);
         }
     }
 
     @Override
-    public ResponseEntity<?> handleRemoveRole(String userId, String role) {
+    public ResponseEntity<RestApiResponse<Boolean>> handleRemoveRole(String userId, String role) {
+        RestApiResponse<Boolean> responseData = new RestApiResponse<>();
         try {
-            Optional<?> data = Optional.empty(); // TODO: Add custom code here;
-            ResponseEntity<?> response;
-
-            if(data.isPresent()) {
-                response = ResponseEntity.status(HttpStatus.OK).body(data.get());
-            } else {
-                response = ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-            }
-
-            return response;
+            // TODO: Add custom code here - this is a placeholder implementation
+            responseData.setSuccess(false);
+            responseData.setMessage("Remove role functionality not yet implemented.");
+            return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body(responseData);
         } catch (Exception e) {
             logger.error(e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            responseData.setSuccess(false);
+            responseData.setMessage(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseData);
         }
     }
 
     @Override
-    public ResponseEntity<?> handleSaveUser(UserDTO user) {
+    public ResponseEntity<RestApiResponse<UserDTO>> handleSaveUser(UserDTO user) {
+        RestApiResponse<UserDTO> responseData = new RestApiResponse<>();
         try {
-            Optional<?> data = Optional.empty(); // TODO: Add custom code here;
-            ResponseEntity<?> response;
-
-            if(data.isPresent()) {
-                response = ResponseEntity.status(HttpStatus.OK).body(data.get());
-            } else {
-                response = ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-            }
-
-            return response;
+            // TODO: Add custom code here - this is a placeholder implementation
+            responseData.setSuccess(false);
+            responseData.setMessage("Save user functionality not yet implemented.");
+            return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body(responseData);
         } catch (Exception e) {
             logger.error(e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            responseData.setSuccess(false);
+            responseData.setMessage(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseData);
         }
     }
 
     @Override
-    public ResponseEntity<?> handleSearch(String criteria) {
+    public ResponseEntity<RestApiResponse<UserDTO>> handleSearch(String criteria) {
+        RestApiResponse<UserDTO> responseData = new RestApiResponse<>();
         try {
-            Optional<?> data = Optional.empty(); // TODO: Add custom code here;
-            ResponseEntity<?> response;
-
-            if(data.isPresent()) {
-                response = ResponseEntity.status(HttpStatus.OK).body(data.get());
-            } else {
-                response = ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-            }
-
-            return response;
+            // TODO: Add custom code here - this is a placeholder implementation
+            responseData.setSuccess(false);
+            responseData.setMessage("Search functionality not yet implemented.");
+            return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body(responseData);
         } catch (Exception e) {
             logger.error(e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            responseData.setSuccess(false);
+            responseData.setMessage(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseData);
         }
     }
 
     @Override
-    public ResponseEntity<?> handleUpdateUserName(String userId, String username) {
+    public ResponseEntity<RestApiResponse<Boolean>> handleUpdateUserName(String userId, String username) {
+        RestApiResponse<Boolean> responseData = new RestApiResponse<>();
         try {
-            Optional<?> data = Optional.empty(); // TODO: Add custom code here;
-            ResponseEntity<?> response;
-
-            if(data.isPresent()) {
-                response = ResponseEntity.status(HttpStatus.OK).body(data.get());
-            } else {
-                response = ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-            }
-
-            return response;
+            // TODO: Add custom code here - this is a placeholder implementation
+            responseData.setSuccess(false);
+            responseData.setMessage("Update username functionality not yet implemented.");
+            return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body(responseData);
         } catch (Exception e) {
             logger.error(e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            responseData.setSuccess(false);
+            responseData.setMessage(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseData);
         }
     }
 }

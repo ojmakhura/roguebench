@@ -116,7 +116,8 @@ public class AuthorisationServiceImpl
 
         if (StringUtils.isNotBlank(criteria.getApplicationId())) {
 
-            spec = RoguebenchSpecifications.findByAttribute(criteria.getApplicationId(), "accessPoint", "application",
+            spec = RoguebenchSpecifications.findByAttributeLikeIgnoreCase(criteria.getApplicationId(), "accessPoint",
+                    "application",
                     "id");
         }
 
@@ -179,19 +180,20 @@ public class AuthorisationServiceImpl
             criteria.setAccessPointUrl("");
         }
 
-        Specification<Authorisation> spec = getSpecification(criteria);
+        // Specification<Authorisation> spec = getSpecification(criteria);
 
-        Collection<Authorisation> authorisations = authorisationRepository.findAll(spec);
+        // Collection<Authorisation> authorisations =
+        // authorisationRepository.findAll(spec);
 
-        // Collection<AuthorisationListDTO> authorisations = roles.isEmpty()
-        // ? authorisationRepository.searchNoRoles(criteria.getApplicationId(),
-        // criteria.getAccessPointName(), criteria.getAccessPointUrl(),
-        // criteria.getAccessPointType())
-        // : authorisationRepository.search(criteria.getApplicationId(),
-        // criteria.getAccessPointName(), criteria.getAccessPointUrl(),
-        // criteria.getAccessPointType(), roles);
+        Collection<AuthorisationListDTO> authorisations = roles.isEmpty()
+                ? authorisationRepository.searchNoRoles(criteria.getApplicationId(),
+                        criteria.getAccessPointName(), criteria.getAccessPointUrl(),
+                        criteria.getAccessPointType())
+                : authorisationRepository.search(criteria.getApplicationId(),
+                        criteria.getAccessPointName(), criteria.getAccessPointUrl(),
+                        criteria.getAccessPointType(), roles);
 
-        return authorisationDao.toAuthorisationListDTOCollection(authorisations);
+        return authorisations;
     }
 
     /**
@@ -341,42 +343,50 @@ public class AuthorisationServiceImpl
             return null;
         }
 
-        Set<String> roles = new HashSet<>();
+        // Set<String> roles = new HashSet<>();
 
-        if (criteria.getCriteria().getRoles() != null) {
-            roles.addAll(criteria.getCriteria().getRoles());
+        // if (criteria.getCriteria().getRoles() != null) {
+        // roles.addAll(criteria.getCriteria().getRoles());
 
-        }
+        // }
 
-        String accessPointName = criteria.getCriteria().getAccessPointName();
+        // String accessPointName = criteria.getCriteria().getAccessPointName();
 
-        if (accessPointName == null) {
-            accessPointName = "";
-        }
+        // if (accessPointName == null) {
+        // accessPointName = "";
+        // }
 
-        String accessPointUrl = criteria.getCriteria().getAccessPointUrl();
+        // String accessPointUrl = criteria.getCriteria().getAccessPointUrl();
 
-        if (accessPointUrl == null) {
-            accessPointUrl = "";
-        }
+        // if (accessPointUrl == null) {
+        // accessPointUrl = "";
+        // }
 
-        String accessPointType = criteria.getCriteria().getAccessPointType();
+        // String accessPointType = criteria.getCriteria().getAccessPointType();
 
-        if (accessPointType == null) {
-            accessPointType = "";
-        }
+        // if (accessPointType == null) {
+        // accessPointType = "";
+        // }
 
-        Page<AuthorisationListDTO> authorisations = roles.isEmpty()
-                ? this.authorisationRepository.searchNoRoles(criteria.getCriteria().getApplicationId(), accessPointName,
-                        accessPointUrl, accessPointType,
-                        PageRequest.of(criteria.getPageNumber(), criteria.getPageSize()))
-                : this.authorisationRepository.search(
-                        criteria.getCriteria().getApplicationId(),
-                        criteria.getCriteria().getAccessPointName(), criteria.getCriteria().getAccessPointUrl(),
-                        accessPointType, roles,
-                        PageRequest.of(criteria.getPageNumber(), criteria.getPageSize()));
+        Specification<Authorisation> spec = getSpecification(criteria.getCriteria());
 
-        return authorisations;
+        Page<Authorisation> authorisations = this.authorisationRepository.findAll(spec,
+                PageRequest.of(criteria.getPageNumber(), criteria.getPageSize(), Sort.by("id").descending()));
+
+        // Page<AuthorisationListDTO> authorisations = roles.isEmpty()
+        // ?
+        // this.authorisationRepository.searchNoRoles(criteria.getCriteria().getApplicationId(),
+        // accessPointName,
+        // accessPointUrl, accessPointType,
+        // PageRequest.of(criteria.getPageNumber(), criteria.getPageSize()))
+        // : this.authorisationRepository.search(
+        // criteria.getCriteria().getApplicationId(),
+        // criteria.getCriteria().getAccessPointName(),
+        // criteria.getCriteria().getAccessPointUrl(),
+        // accessPointType, roles,
+        // PageRequest.of(criteria.getPageNumber(), criteria.getPageSize()));
+
+        return authorisations.map(auth -> authorisationDao.toAuthorisationListDTO(auth));
     }
 
     /**

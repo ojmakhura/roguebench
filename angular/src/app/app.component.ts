@@ -212,7 +212,9 @@ export class AppComponent implements OnInit, OnDestroy {
         .subscribe({
           next: (authorisations: AuthorisationListDTO[]) => {
             this.appStore.addMenus(
-              authorisations.map((auth) => {
+              authorisations
+              .filter((auth) => auth.accessPointType === 'Menu')
+              .map((auth) => {
 
                 return {
                   routerLink: auth.accessPointUrl,
@@ -224,7 +226,7 @@ export class AppComponent implements OnInit, OnDestroy {
             );
 
             this.appStore.setLoadingMenus(false);
-            this.appStore.setAuthorisedPaths(authorisations.map((auth) => auth.accessPointUrl));
+            this.appStore.setAuthorisedPaths(authorisations.map((auth) => auth.accessPointUrl as string));
             this.appStore.setAuthorisedPathsLoaded(true);
           },
           error: (error) => {

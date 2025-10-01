@@ -71,7 +71,7 @@ public class ApplicationServiceImpl
     {
 
         Application entity = applicationDao.applicationDTOToEntity(application);
-        applicationDao.create(entity);
+        entity = applicationRepository.save(entity);
         return applicationDao.toApplicationDTO(entity);
     }
 

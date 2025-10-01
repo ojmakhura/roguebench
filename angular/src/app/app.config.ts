@@ -1,4 +1,4 @@
-import { ApplicationConfig, isDevMode, importProvidersFrom } from '@angular/core';
+import { ApplicationConfig, isDevMode, importProvidersFrom, provideAppInitializer } from '@angular/core';
 import { RouteReuseStrategy, provideRouter, withHashLocation } from '@angular/router';
 
 import { routes } from './app.routes';
@@ -15,6 +15,11 @@ import { apiPrefixInterceptor } from './@core/http/api-prefix.interceptor';
 import { errorHandlerInterceptor } from './@core/http/error-handler.interceptor';
 import { AutoRefreshTokenService, createInterceptorCondition, INCLUDE_BEARER_TOKEN_INTERCEPTOR_CONFIG, IncludeBearerTokenCondition, includeBearerTokenInterceptor, provideKeycloak, UserActivityService, withAutoRefreshToken } from 'keycloak-angular';
 import { provideToastr } from 'ngx-toastr';
+
+export function initFactory() {
+
+  return async () => {};
+}
 
 export const provideKeycloakAndInterceptor = (env: any) => {
   const urlConditions = [
@@ -89,6 +94,7 @@ export const appConfig = (env: any) => {
         provide: RouteReuseStrategy,
         useClass: RouteReusableStrategy,
       },
+      provideAppInitializer(() => initFactory()()),
     ],
   } as ApplicationConfig;
 };

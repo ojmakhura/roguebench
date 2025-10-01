@@ -70,6 +70,15 @@ public class AccessPointDaoImpl
 
             target.setApplication(application);
         }
+
+        if(source.getParent() != null)
+        {
+            AccessPointListDTO parent = new AccessPointListDTO();
+            parent.setId(source.getParent().getId());
+            parent.setName(source.getParent().getName());
+            parent.setUrl(source.getParent().getUrl());
+            target.setParent(parent);
+        }
     }
 
     /**
@@ -95,7 +104,9 @@ public class AccessPointDaoImpl
         }
         else
         {
-            return this.load(accessPointDTO.getId());
+
+            return accessPointRepository.findById(accessPointDTO.getId())
+                .orElseThrow(() -> new IllegalArgumentException("AccessPoint with id " + accessPointDTO.getId() + " not found"));
         }
     }
 
@@ -131,6 +142,12 @@ public class AccessPointDaoImpl
 
             target.setApplication(this.applicationRepository.getReferenceById(source.getApplication().getId()));
         }
+
+        if(source.getParent() != null) {
+
+            target.setParent(this.loadAccessPointFromAccessPointListDTO(source.getParent()));
+
+        }
     }
     /**
      * {@inheritDoc}
@@ -153,6 +170,12 @@ public class AccessPointDaoImpl
 
             target.setApplicationId(source.getApplication().getId());
             target.setApplication(source.getApplication().getName());
+        }
+
+        if(source.getParent() != null) {
+
+            target.setParent(source.getParent().getName());
+            target.setParentId(source.getParent().getId());
         }
     }
 
@@ -179,7 +202,8 @@ public class AccessPointDaoImpl
         }
         else
         {
-            return this.load(accessPointListDTO.getId());
+            return accessPointRepository.findById(accessPointListDTO.getId())
+                .orElseThrow(() -> new IllegalArgumentException("AccessPoint with id " + accessPointListDTO.getId() + " not found"));
         }
     }
 

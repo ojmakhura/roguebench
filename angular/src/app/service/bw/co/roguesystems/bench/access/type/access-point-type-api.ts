@@ -5,6 +5,7 @@ import { AccessPointTypeDTO } from '@app/model/bw/co/roguesystems/bench/access/t
 import { HttpClient } from '@angular/common/http';
 import { Page } from '@app/model/page.model';
 import { SearchObject } from '@app/model/search-object';
+import { RestApiResponse } from '@app/model/rest-api-response.model';
 
 @Injectable({
   providedIn: 'root'
@@ -15,39 +16,39 @@ export class AccessPointTypeApi {
 
     private http = inject(HttpClient);
 
-    public findById(id: string | any ): Observable<AccessPointTypeDTO | any> {
+    public findById(id: string | any ): Observable<RestApiResponse<AccessPointTypeDTO | any>> {
 
-        return this.http.get<AccessPointTypeDTO | any>(this.path + `/${id}`);
+        return this.http.get<RestApiResponse<AccessPointTypeDTO | any>>(`${this.path}/${id}`);
     }
 
-    public getAll(): Observable<AccessPointTypeDTO[] | any[]> {
+    public getAll(): Observable<RestApiResponse<AccessPointTypeDTO[] | any[]>> {
 
-        return this.http.get<AccessPointTypeDTO[] | any[]>(this.path);
+        return this.http.get<RestApiResponse<AccessPointTypeDTO[] | any[]>>(`${this.path}`);
     }
 
-    public getAllPaged(pageNumber: number | any , pageSize: number | any ): Observable<AccessPointTypeDTO | any> {
+    public getAllPaged(pageNumber: number | any , pageSize: number | any ): Observable<RestApiResponse<AccessPointTypeDTO | any>> {
 
-        return this.http.get<AccessPointTypeDTO | any>(this.path + `/paged?pageNumber=${pageNumber}&pageSize=${pageSize}`);
+        return this.http.get<RestApiResponse<AccessPointTypeDTO | any>>(`${this.path}/paged?pageNumber=${pageNumber}&pageSize=${pageSize}`);
     }
 
-    public pagedSearch(criteria: SearchObject<string> | any ): Observable<AccessPointTypeDTO | any> {
+    public pagedSearch(criteria: SearchObject<string> | any ): Observable<RestApiResponse<AccessPointTypeDTO | any>> {
 
-        return this.http.post<AccessPointTypeDTO | any>(this.path + `/search/paged`, criteria);
+        return this.http.post<RestApiResponse<AccessPointTypeDTO | any>>(`${this.path}/search/paged`, criteria);
     }
 
-    public remove(id: string | any ): Observable<boolean | any> {
+    public remove(id: string | any ): Observable<RestApiResponse<boolean | any>> {
 
-        return this.http.delete<boolean | any>(this.path + `/${id}`);
+        return this.http.delete<RestApiResponse<boolean | any>>(`${this.path}/${id}`);
     }
 
-    public save(accessPointType: AccessPointTypeDTO | any ): Observable<AccessPointTypeDTO | any> {
+    public save(accessPointType: AccessPointTypeDTO | any ): Observable<RestApiResponse<AccessPointTypeDTO | any>> {
 
-        return this.http.post<AccessPointTypeDTO | any>(this.path, accessPointType);
+        return this.http.post<RestApiResponse<AccessPointTypeDTO | any>>(`${this.path}`, accessPointType);
     }
 
-    public search(criteria: string | any ): Observable<AccessPointTypeDTO[] | any[]> {
+    public search(criteria: string | any ): Observable<RestApiResponse<AccessPointTypeDTO[] | any[]>> {
 
-        return this.http.get<AccessPointTypeDTO[] | any[]>(this.path + `/search?criteria=${criteria}`);
+        return this.http.get<RestApiResponse<AccessPointTypeDTO[] | any[]>>(`${this.path}/search?criteria=${criteria}`);
     }
 
 }

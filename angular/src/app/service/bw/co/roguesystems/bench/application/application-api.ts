@@ -5,6 +5,7 @@ import { ApplicationDTO } from '@app/model/bw/co/roguesystems/bench/application/
 import { HttpClient } from '@angular/common/http';
 import { Page } from '@app/model/page.model';
 import { SearchObject } from '@app/model/search-object';
+import { RestApiResponse } from '@app/model/rest-api-response.model';
 
 @Injectable({
   providedIn: 'root'
@@ -15,44 +16,44 @@ export class ApplicationApi {
 
     private http = inject(HttpClient);
 
-    public findByCode(code: string | any ): Observable<ApplicationDTO | any> {
+    public findByCode(code: string | any ): Observable<RestApiResponse<ApplicationDTO | any>> {
 
-        return this.http.get<ApplicationDTO | any>(this.path + `/code/${code}`);
+        return this.http.get<RestApiResponse<ApplicationDTO | any>>(`${this.path}/code/${code}`);
     }
 
-    public findById(id: string | any ): Observable<ApplicationDTO | any> {
+    public findById(id: string | any ): Observable<RestApiResponse<ApplicationDTO | any>> {
 
-        return this.http.get<ApplicationDTO | any>(this.path + `/${id}`);
+        return this.http.get<RestApiResponse<ApplicationDTO | any>>(`${this.path}/${id}`);
     }
 
-    public getAll(): Observable<ApplicationDTO[] | any[]> {
+    public getAll(): Observable<RestApiResponse<ApplicationDTO[] | any[]>> {
 
-        return this.http.get<ApplicationDTO[] | any[]>(this.path);
+        return this.http.get<RestApiResponse<ApplicationDTO[] | any[]>>(`${this.path}`);
     }
 
-    public getAllPaged(pageNumber: number | any , pageSize: number | any ): Observable<Page<ApplicationDTO> | any> {
+    public getAllPaged(pageNumber: number | any , pageSize: number | any ): Observable<RestApiResponse<Page<ApplicationDTO> | any>> {
 
-        return this.http.get<Page<ApplicationDTO> | any>(this.path + `/paged?pageNumber=${pageNumber}&pageSize=${pageSize}`);
+        return this.http.get<RestApiResponse<Page<ApplicationDTO> | any>>(`${this.path}/paged?pageNumber=${pageNumber}&pageSize=${pageSize}`);
     }
 
-    public pagedSearch(criteria: SearchObject<string> | any ): Observable<Page<ApplicationDTO> | any> {
+    public pagedSearch(criteria: SearchObject<string> | any ): Observable<RestApiResponse<Page<ApplicationDTO> | any>> {
 
-        return this.http.post<Page<ApplicationDTO> | any>(this.path + `/search/paged`, criteria);
+        return this.http.post<RestApiResponse<Page<ApplicationDTO> | any>>(`${this.path}/search/paged`, criteria);
     }
 
-    public remove(id: string | any ): Observable<boolean | any> {
+    public remove(id: string | any ): Observable<RestApiResponse<boolean | any>> {
 
-        return this.http.delete<boolean | any>(this.path + `/${id}`);
+        return this.http.delete<RestApiResponse<boolean | any>>(`${this.path}/${id}`);
     }
 
-    public save(application: ApplicationDTO | any ): Observable<ApplicationDTO | any> {
+    public save(application: ApplicationDTO | any ): Observable<RestApiResponse<ApplicationDTO | any>> {
 
-        return this.http.post<ApplicationDTO | any>(this.path, application);
+        return this.http.post<RestApiResponse<ApplicationDTO | any>>(`${this.path}`, application);
     }
 
-    public search(criteria: string | any ): Observable<ApplicationDTO[] | any[]> {
+    public search(criteria: string | any ): Observable<RestApiResponse<ApplicationDTO[] | any[]>> {
 
-        return this.http.get<ApplicationDTO[] | any[]>(this.path + `/search?criteria=${criteria}`);
+        return this.http.get<RestApiResponse<ApplicationDTO[] | any[]>>(`${this.path}/search?criteria=${criteria}`);
     }
 
 }

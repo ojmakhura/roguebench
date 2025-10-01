@@ -32,7 +32,7 @@ export class SearchUsersImplComponent extends SearchUsersComponent {
         super();
     }
 
-    override beforeOnInit(form: SearchUsersVarsForm): SearchUsersVarsForm{
+    override beforeOnInit(form: SearchUsersVarsForm): SearchUsersVarsForm{     
         return form;
     }
 
